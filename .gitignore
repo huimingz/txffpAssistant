@@ -204,3 +204,4 @@ docs
 /txffpAssistant/handler/.*
 /tests/html/
 /tests/test_data.py
+/tests/download/
