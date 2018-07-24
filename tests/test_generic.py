@@ -12,8 +12,7 @@ import unittest
 from txffpAssistant import decorators
 from txffpAssistant import logger as log
 from txffpAssistant.handler import generic
-from txffpAssistant.handler.generic import authenticated_session
-from . import test_data
+from tests import test_data
 
 logger = log.stream_logger(level=logging.DEBUG)
 
