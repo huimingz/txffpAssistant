@@ -14,7 +14,7 @@ from txffpAssistant import exceptions
 from txffpAssistant.handler import base
 from txffpAssistant.handler import auth
 
-__all__ = ["ETCCardInfoHandler", "InvoiceRecordHandler"]
+__all__ = ["ETCCardInfoHandler", "InvoiceRecordHandler", "authenticated_session", "invpdf_cld_dl"]
 
 
 def authenticated_session(username, password, *args, **kwargs):
