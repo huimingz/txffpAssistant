@@ -12,6 +12,7 @@ import unittest
 from txffpAssistant import decorators
 from txffpAssistant import logger as log
 from txffpAssistant.handler import generic
+from txffpAssistant.handler.generic import authenticated_session
 from . import test_data
 
 logger = log.stream_logger(level=logging.DEBUG)
@@ -102,3 +103,19 @@ class InvoiceRecordTestCase(unittest.TestCase):
         record_info_list = [info for rc_info in record_infos for info in rc_info]
         self.assertEqual(len(record_info_list), 3)
 
+
+class FunctionTestCase(unittest.TestCase):
+    
+    def test_invpdf_cld_dl(self):
+        username = test_data.username
+        password = test_data.password
+        
+        authed_session = generic.authenticated_session(username, password, logger=logger)
+        
+        response = generic.invpdf_cld_dl(authed_session, **test_data.invpdf_cld_d_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.content is not None)
+
+        # with open("tests/download/pdfcld.zip", "wb") as f:
+        #     f.write(response.content)
+        authed_session.close()
