@@ -28,16 +28,16 @@ def authenticated_session(username, password, *args, **kwargs):
 class ETCCardHandler(base.GeneralHandler):
     carinfo_log_format = (
         "etc卡信息（第{page_num}页）\n"
-        "{id_nm:>20}:  {cardid}\n"
-        "{ic_nm:>20}:  {iccard}\n"
+        "{cardid_nm:>20}:  {cardid}\n"
+        "{iccard_nm:>20}:  {iccard}\n"
         "{carnum_nm:>20}:  {carnum}\n"
         "{region_nm:>20}:  {region}\n"
         "{type_nm:>20}:  {card_type}\n"
     )
     
     carinfo_exteral = dict(
-        id_nm="ETC ID",
-        ic_nm="IC CARD",
+        cardid_nm="ETC ID",
+        iccard_nm="IC CARD",
         carnum_nm="PLATE NUMBER",
         region_nm="REGION",
         type_nm="TYPE",
@@ -262,3 +262,13 @@ class InvoiceRecordHandler(base.GeneralHandler):
                 **self.carinfo_exteral,
                 **record_info))
             yield record_info
+            
+
+def invpdf_cld_dl(session, card_id, inv_id):
+    url = (
+        "https://pss.txffp.com/pss/app/login/invoice/"
+        "query/download/{inv_id}/{card_id}/APPLY"
+    )
+    url = url.format(card_id=card_id, inv_id=inv_id)
+    response = session.get(url=url)
+    return response
