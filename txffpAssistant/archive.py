@@ -26,11 +26,15 @@ def get_zipfile(filepath):
         for root, dirs, files in os.walk(filepath):
             for fn in files:
                 fp = os.path.join(root, fn)
-                if is_zip(fp):
-                    yield fp
+                with open(fp, "rb") as f:
+                    fb = f.read()
+                if is_zip(fb):
+                    yield fp, fb
     
     elif os.path.isfile(filepath):
         if is_zip(filepath):
-            yield filepath
+            with open(filepath, "rb") as f:
+                fb = f.read()
+            yield filepath, fb
         else:
             return iter([])
