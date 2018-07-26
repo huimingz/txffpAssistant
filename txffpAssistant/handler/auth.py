@@ -15,6 +15,8 @@ from txffpAssistant import exceptions
 from txffpAssistant import decorators
 
 
+__all__ = ["AuthHandler", "authenticated_session"]
+
 login_page_url = "https://pss.txffp.com/pss/app/index"
 
 auth_url = "https://sso.txffp.com/sso/app/oauth/login"
@@ -118,3 +120,11 @@ class AuthHandler(BaseHandler):
 
         result = self.auth_status_checker(content)
         return result
+
+
+def authenticated_session(username, password, *args, **kwargs):
+    event = AuthHandler(*args, **kwargs)
+    result = event.login(username, password)
+    if not result:
+        raise exceptions.AuthFailedError("登陆失败")
+    return event.session

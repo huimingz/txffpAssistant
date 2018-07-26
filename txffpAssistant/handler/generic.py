@@ -12,17 +12,9 @@ from lxml import etree
 
 from txffpAssistant import exceptions
 from txffpAssistant.handler import base
-from txffpAssistant.handler import auth
-
-__all__ = ["ETCCardInfoHandler", "InvoiceRecordHandler", "authenticated_session", "invpdf_cld_dl"]
 
 
-def authenticated_session(username, password, *args, **kwargs):
-    event = auth.AuthHandler(*args, **kwargs)
-    result = event.login(username, password)
-    if not result:
-        raise exceptions.AuthFailedError("登陆失败")
-    return event.session
+__all__ = ["ETCCardHandler", "InvoiceRecordHandler", "invpdf_cld_dl"]
 
 
 class ETCCardHandler(base.GeneralHandler):
