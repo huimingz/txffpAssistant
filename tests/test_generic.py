@@ -6,16 +6,19 @@
 # @Date    : 2018/07/23 13:54
 
 import logging
+import os
 import sys
 import unittest
 
 from txffpAssistant import decorators
 from txffpAssistant import logger as log
 from txffpAssistant.handler import generic
+from txffpAssistant.handler import auth
 from tests import test_data
 
-logger = log.stream_logger(level=logging.DEBUG)
 
+logger = log.stream_logger(level=logging.DEBUG)
+base_dir = os.path.dirname(os.path.abspath(__file__))
 
 class ETCCardHandlerTestCase(unittest.TestCase):
     
@@ -24,7 +27,7 @@ class ETCCardHandlerTestCase(unittest.TestCase):
     
     def test_get_cardlist_cardinfo(self):
         with decorators.log_level(self.etc.logger, logging.INFO):
-            filepath = "tests/html/card_list_company_response.html"
+            filepath = os.path.join(base_dir, "html/card_list_company_response.html")
             with open(filepath) as f:
                 html = f.read()
             
@@ -33,7 +36,7 @@ class ETCCardHandlerTestCase(unittest.TestCase):
             self.assertEqual(len(card_list), 16)
     
     def test_get_bind_cardinfo(self):
-        filepath = "tests/html/cardBinding_company_response.html"
+        filepath = os.path.join(base_dir, "html/cardBinding_company_response.html")
         with open(filepath) as f:
             html = f.read()
         
@@ -46,7 +49,7 @@ class ETCCardHandlerTestCase(unittest.TestCase):
         username = test_data.username
         password = test_data.password
         
-        authed_session = generic.authenticated_session(username, password, logger=logger)
+        authed_session = auth.authenticated_session(username, password, logger=logger)
         etc_event = generic.ETCCardHandler(session=authed_session, logger=logger)
         cardinfos_iter = etc_event.get_cardlist(user_type="COMPANY")
         
@@ -62,7 +65,7 @@ class ETCCardHandlerTestCase(unittest.TestCase):
         username = test_data.username
         password = test_data.password
         
-        authed_session = generic.authenticated_session(username, password, logger=logger)
+        authed_session = auth.authenticated_session(username, password, logger=logger)
         etc_event = generic.ETCCardHandler(session=authed_session, logger=logger)
         cardinfos_iter = etc_event.get_cardlist(user_type="PERSONAL")
         
@@ -78,7 +81,7 @@ class ETCCardHandlerTestCase(unittest.TestCase):
 class InvoiceRecordTestCase(unittest.TestCase):
     
     def test_get_query_apply_data(self):
-        filepath = "tests/html/invoiceRecord-queryApply.html"
+        filepath = os.path.join(base_dir, "html/invoiceRecord-queryApply.html")
         with open(filepath) as f:
             html = f.read()
         
@@ -93,7 +96,7 @@ class InvoiceRecordTestCase(unittest.TestCase):
         username = test_data.username
         password = test_data.password
         
-        authed_session = generic.authenticated_session(username, password, logger=logger)
+        authed_session = auth.authenticated_session(username, password, logger=logger)
         
         ir = generic.InvoiceRecordHandler(logger=logger, session=authed_session)
         record_infos = ir.get_record_info(month=201805, **test_data.redorc_data)
@@ -109,7 +112,7 @@ class FunctionTestCase(unittest.TestCase):
         username = test_data.username
         password = test_data.password
         
-        authed_session = generic.authenticated_session(username, password, logger=logger)
+        authed_session = auth.authenticated_session(username, password, logger=logger)
         
         response = generic.invpdf_cld_dl(authed_session, **test_data.invpdf_cld_d_data)
         self.assertEqual(response.status_code, 200)
