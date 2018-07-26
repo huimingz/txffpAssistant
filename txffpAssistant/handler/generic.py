@@ -242,6 +242,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
             status = record_node.xpath(".//tr[2]/td[1]/table/tr[1]/td[4]/span/text()")[0]
             
             taxpaper_id = re.sub("\n|\s", "", taxpaper_id)[16:]
+            apply_date = apply_date[7:]
             company = re.sub("\n|\s", "", company)[5:]
             inv_id = inv_id.get("href").split("/")[-3]
             
