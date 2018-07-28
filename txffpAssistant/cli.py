@@ -54,38 +54,6 @@ def authstr_parser(authstr:str) -> (str, str):
         username = parsed[0]
         password = parsed[1]
     return username, password
-
-
-def etc_card(username, password, logger, etc_type="all"):
-    if etc_type.upper() != "ALL" and etc_type.lower() not in etc_type_dict:
-        raise ValueError("etc_type not in {}".format(etc_type_dict.keys()))
-
-
-    etc_handler = handler.ETCCardHandler(
-        session=authed_session, logger=logger)
-    
-    def get_etc_info(etc_type):
-        etc = etc_handler.get_cardlist(etc_type)
-        etcinfo = [ei for ei_iter in etc for ei in ei_iter]
-        return etcinfo
-    
-    if etc_type.upper() == "ALL":
-        p_etcinfo = get_etc_info("PERSONAL")
-        c_etcinfo = get_etc_info("COMPANY")
-    elif etc_type.upper() == "PERSONAL":
-        p_etcinfo = get_etc_info("PERSONAL")
-    elif etc_type.upper() == "COMPANY":
-        c_etcinfo = get_etc_info("COMPANY")
-        
-    logger.info("已完成ETC卡信息的获取")
-    
-    local_keys = locals().keys()
-    if "p_etcinfo" in local_keys and "c_etcinfo" in local_keys:
-        logger.info("单位卡{}张，个人卡{}张".format(len(c_etcinfo), len(p_etcinfo)))
-    elif "p_etcinfo" in local_keys:
-        logger.info("个人卡{}张".format(len(p_etcinfo)))
-    elif "c_etcinfo" in local_keys:
-        logger.info("单位卡{}张".format(len(c_etcinfo)))
         
         
 class MonthAction(argparse.Action):
@@ -155,7 +123,7 @@ class Service(object):
         
     def auth(self):
         if hasattr(self.options, "auth") and self.options.auth:
-            self.username, self.password = authstr_parser(options.auth)
+            self.username, self.password = authstr_parser(self.options.auth)
         else:
             self.username, self.password = get_uname_passwd()
 
@@ -207,7 +175,19 @@ class EtcService(Service):
 class RecordService(Service):
     
     def run(self):
-        print(self.options)
+        authed_session = self.login()
+        
+        rd_handler = handler.InvoiceRecordHandler(
+            session=authed_session, logger=self.logger)
+
+        user_type = self.options.user_type.upper()
+        card_id = self.options.etc_id
+        month = self.options.month
+        
+        inv_rd = rd_handler.get_record_info(card_id, month, user_type)
+        record_info = [ri for ri_iter in inv_rd for ri in ri_iter]
+        self.logger.info("已完成发票记录信息的获取")
+        self.logger.info("共{}条发票记录".format(len(record_info)))
         
 
 def main():
@@ -229,8 +209,8 @@ def main():
     service_record = service_subparser.add_parser("record" ,help="查看开票记录")
     service_record.add_argument("--id", action=IDAction ,dest="etc_id", type=str, required=True, help="指定ETC卡id")
     service_record.add_argument("--month", action=MonthAction, dest="month", type=str, required=True, help="开票年月，例如: 201805")
-    service_record.add_argument("--type", dest="etc_type", choices=["personal", "company"],
-                                  default="conpany", help="指定etc卡类型，默认：personal")
+    service_record.add_argument("--type", dest="user_type", choices=["personal", "company"],
+                                  default="company", help="指定etc卡类型，默认：company")
     service_record.add_argument("--auth", action=AuthAction, dest="auth", type=str, help="票根网用户名和密码，格式：username:password")
     
     
