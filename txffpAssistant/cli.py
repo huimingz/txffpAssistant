@@ -68,7 +68,7 @@ class MonthAction(argparse.Action):
             sys.exit(1)
         year = yearmonth[:4]
         month = yearmonth[4:]
-        month_all = [str(m) for m in range(1, 13)]
+        month_all = ["{:02d}".format(m) for m in range(1, 13)]
         if month not in month_all:
             print("Error: 月份信息不合法，所指定月份不存在")
             sys.exit(1)
