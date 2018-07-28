@@ -236,7 +236,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
             taxpaper_id = re.sub("\n|\s", "", taxpaper_id)[16:]
             apply_date = apply_date[7:]
             company = re.sub("\n|\s", "", company)[5:]
-            inv_id = inv_id.get("href").split("/")[-3]
+            inv_id = inv_id.get("href").split("/")[-4]
             
             record_info = dict(
                 taxpaper_id=taxpaper_id,
