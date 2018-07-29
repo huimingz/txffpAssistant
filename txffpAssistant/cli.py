@@ -20,14 +20,6 @@ from . import __version__ as version
 
 version_info = "txffpAssistant version {}".format(version)
 
-logg_level_dict = {
-    "debug": logging.DEBUG,
-    "info": logging.info,
-    "warn": logging.WARN,
-    "error": logging.ERROR,
-    "critical": logging.CRITICAL
-}
-
 
 def get_password() -> str:
     password = getpass.getpass("enter your password: ")
