@@ -33,7 +33,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     platforms="any",
-    python_requires=">=3.5",
+    python_requires=">=3.4",
     install_requires=[
         "lxml>=4.2.3",
         "requests>=2.19.1",
@@ -46,6 +46,7 @@ setup(
         "Natural Language :: Chinese (Simplified)",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7"
