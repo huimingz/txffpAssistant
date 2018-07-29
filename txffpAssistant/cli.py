@@ -302,6 +302,7 @@ def main():
     description = "使用过程中出现问题，请到xxx发起issue。"
     parser= argparse.ArgumentParser(description=description, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("-d", "--debug", action="store_true", help="debug模式")
+    parser.add_argument("-s", "--simple", action="store_true", dest="simple", help="精简模式")
     parser.add_argument("-v", "--version", action="version", version=version_info, help="查看当前版本并退出")
 
     service_subparser = parser.add_subparsers(title="Commands", dest="command")
@@ -341,9 +342,11 @@ def main():
         parser.parse_args(["-h"])
     
     options = parser.parse_args()
-    print("options: {}".format(options))
     
-    logger = log.stream_logger()
+    if options.simple:
+        logger = log.stream_logger("%(message)s")
+    else:
+        logger = log.stream_logger()
     # debug mode
     if options.debug:
         logger.setLevel(logging.DEBUG)
