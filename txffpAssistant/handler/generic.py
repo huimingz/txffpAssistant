@@ -137,6 +137,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
     
     record_info_log_format = (
         "{month}发票记录信息（第{page_num}页）\n"
+        "{etc_id_nm:>20}:  {etc_id}\n"
         "{inv_id_nm:>20}:  {inv_id}\n"
         "{apply_date_nm:>20}:  {apply_date}\n"
         "{amount_nm:>20}:  {amount}\n"
@@ -148,6 +149,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
     )
     
     carinfo_exteral = dict(
+        etc_id_nm="ETC ID",
         inv_id_nm="RECORD ID",
         apply_date_nm="APPLY DATETIME",
         amount_nm="AMOUNT",
@@ -211,7 +213,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
                 raise exceptions.NoneResponseError("获取发票记录信息失败，原因：服务器响应为空")
             
             record_info_iter = self._get_query_apply_data(
-                response.text, page_num, month)
+                response.text, page_num, month, card_id)
             yield record_info_iter
             
             if self.has_next_page(html=response.text):
@@ -219,7 +221,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
             else:
                 break
     
-    def _get_query_apply_data(self, html, page_num, month):
+    def _get_query_apply_data(self, html, page_num, month, etc_id):
         node = etree.HTML(html)
         record_nodes = node.xpath("//table[@class='table_wdfp']")
         
@@ -236,7 +238,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
             taxpaper_id = re.sub("\n|\s", "", taxpaper_id)[16:]
             apply_date = apply_date[7:]
             company = re.sub("\n|\s", "", company)[5:]
-            inv_id = inv_id.get("href").split("/")[-3]
+            inv_id = inv_id.get("href").split("/")[-4]
             
             record_info = dict(
                 taxpaper_id=taxpaper_id,
@@ -246,11 +248,12 @@ class InvoiceRecordHandler(base.GeneralHandler):
                 company=company,
                 amount=amount,
                 inv_id=inv_id,
+                etc_id=etc_id,
                 status=status,
+                month=month,
             )
             
             self.logger.info(self.record_info_log_format.format(
-                month=month,
                 page_num=page_num,
                 **self.carinfo_exteral,
                 **record_info))
