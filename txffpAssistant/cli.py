@@ -292,44 +292,48 @@ class InvDlService(Service):
 
 def main():
     description = "使用过程中出现问题，请到xxx发起issue。"
-    parser= argparse.ArgumentParser(description=description, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser= argparse.ArgumentParser(description=description)
     parser.add_argument("-d", "--debug", action="store_true", help="debug模式")
     parser.add_argument("-s", "--simple", action="store_true", dest="simple", help="精简模式")
-    parser.add_argument("-v", "--version", action="version", version=version_info, help="查看当前版本并退出")
+    parser.add_argument("-v", "--version", action="version", version=version_info,
+                        help="查看当前版本并退出")
 
     service_subparser = parser.add_subparsers(title="Commands", dest="command")
     
     # etc card list
     service_etc = service_subparser.add_parser("etc", help="查看ETC卡信息")
     service_etc.add_argument("--type", dest="etc_type", choices=["personal", "company", "all"],
-                                  default="all", help="指定etc卡类型，默认：all")
+                                  default="all", help="etc卡类型，默认：all")
     service_etc.add_argument("--auth", action=AuthAction, dest="auth", type=str,
-                                  help="票根网用户名和密码，格式：username:password")
+                                  help="用户名和密码，格式：user:password")
     
     # invoice record
     service_record = service_subparser.add_parser("record" ,help="查看开票记录")
-    service_record.add_argument("--id", action=IDAction ,dest="etc_id", type=str, required=True, help="ETC卡ID")
-    service_record.add_argument("--month", action=MonthAction, dest="month", type=str, required=True, help="开票年月，例如: 201805")
+    service_record.add_argument("--id", action=IDAction ,dest="etc_id", type=str, required=True,
+                                help="ETC卡ID")
+    service_record.add_argument("--month", action=MonthAction, dest="month", type=str,
+                                required=True, help="开票年月，例如: 201805")
     service_record.add_argument("--type", dest="user_type", choices=["personal", "company"],
-                                  default="company", help="指定etc卡类型，默认：company")
-    service_record.add_argument("--auth", action=AuthAction, dest="auth", type=str, help="票根网用户名和密码，格式：username:password")
+                                  default="company", help="etc卡类型，默认：company")
+    service_record.add_argument("--auth", action=AuthAction, dest="auth", type=str,
+                                help="用户名和密码，格式：user:password")
     
     # invoice download
     service_inv_dl = service_subparser.add_parser("inv-dl", help="下载发票")
     service_inv_dl.add_argument("--month", action=MonthAction, dest="month", type=str,
                                 required=True, help="开票年月，例如: 201805")
     service_inv_dl.add_argument("--type", dest="etc_type", choices=["personal", "company", "all"],
-                                  default="company", help="指定etc卡类型，默认：company")
-    service_inv_dl.add_argument("-o", "--output", type=str, action=OutputDirAction,
-                                default=os.path.join(os.getcwd(), "txffp"), help="保存位置,默认：当前目录下的txffp文件目录下")
-    service_inv_dl.add_argument("--merge", dest="merge", type=bool, default=True, help="自动解压")
+                                  default="company", help="etc卡类型，默认：company")
+    service_inv_dl.add_argument("--merge", dest="merge", type=bool, default=True, help="自动合并")
     service_inv_dl.add_argument("--auth", action=AuthAction, dest="auth", type=str,
-                                help="票根网用户名和密码，格式：username:password")
+                                help="用户名和密码，格式：user:password")
     inv_dl_group = service_inv_dl.add_mutually_exclusive_group()
     inv_dl_group.add_argument("--all", dest="dl_all", type=bool, default=True, help="下载全部发票")
     inv_dl_group.add_argument("--etcid", action=IDAction, dest="etc_id", type=str, help="ETC卡ID")
-    # inv_dl_group.add_argument("--recordid", action=IDAction, dest="record_id", type=str, help="开票记录ID")
-    
+    service_inv_dl.add_argument("-o", "--output", type=str, action=OutputDirAction,
+                                default=os.path.join(os.getcwd(), "txffp"),
+                                help="保存位置, 默认：当前目录的txffp目录下")
+
     if len(sys.argv) == 1:
         parser.print_help(file=sys.stdout)
     
