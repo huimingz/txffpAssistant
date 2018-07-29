@@ -34,6 +34,12 @@ setup(
     zip_safe=False,
     platforms="any",
     python_requires=">=3.5",
+    install_requires=[
+        "lxml>=4.2.3",
+        "requests>=2.19.1",
+        "PyPDF2>=1.26.0",
+        "filetype>=1.0.1"
+    ],
     classifiers=[
         "Intended Audience :: Other Audience",
         "License :: OSI Approved :: MIT License",
@@ -46,7 +52,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "txffp-download = xxx",
+            "txffp = txffpAssistant.cli:main",
         ]
     }
 )
