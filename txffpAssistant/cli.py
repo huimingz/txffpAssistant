@@ -339,7 +339,7 @@ def main():
     # inv_dl_group.add_argument("--recordid", action=IDAction, dest="record_id", type=str, help="开票记录ID")
     
     if len(sys.argv) == 1:
-        parser.parse_args(["-h"])
+        parser.print_help(file=sys.stdout)
     
     options = parser.parse_args()
     
