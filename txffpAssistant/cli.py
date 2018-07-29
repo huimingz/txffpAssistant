@@ -188,7 +188,7 @@ class RecordService(Service):
         record_info = [ri for ri_iter in inv_rd for ri in ri_iter]
         self.logger.info("已完成发票记录信息的获取")
         self.logger.info("共{}条发票记录".format(len(record_info)))
-        
+   
 
 def main():
     description = "使用过程中出现问题，请到xxx发起issue。"
@@ -213,11 +213,10 @@ def main():
                                   default="company", help="指定etc卡类型，默认：company")
     service_record.add_argument("--auth", action=AuthAction, dest="auth", type=str, help="票根网用户名和密码，格式：username:password")
     
-    
     # invoice download
     service_inv_dl = service_subparser.add_parser("inv-dl", help="下载发票")
     service_inv_dl.add_argument("-e", "--extract", type=bool, default=True, help="自动解压")
-    
+
     if len(sys.argv) == 1:
         parser.parse_args(["-h"])
     
@@ -231,7 +230,15 @@ def main():
         logger.debug("启用debug模式")
 
     if options.command:
-        class_name = options.command.title() + "Service"
+        command = options.command
+        if "-" in command:
+            cmds = command.split("-")
+            cmds = [cmd.title() for cmd in cmds]
+            command = "".join(cmds)
+        else:
+            command = command.title()
+
+        class_name = command + "Service"
         service = eval(class_name)(options, logger)
         service.run()
 
