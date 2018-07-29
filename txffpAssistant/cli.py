@@ -12,9 +12,9 @@ import os
 import string
 import sys
 
-from . import exceptions
 from . import handler
 from . import logger as log
+from . import pdf
 from . import __version__ as version
 
 
@@ -113,6 +113,19 @@ class IDAction(argparse.Action):
             sys.exit(1)
             
 
+class OutputDirAction(argparse.Action):
+    
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values == parser.get_default("output"):
+            os.makedirs(values, 0o777)
+            
+        if not os.path.isdir(values):
+            print("Error: 指定输出路径不合法或不存在", file=sys.stderr)
+            sys,exit(1)
+            
+        setattr(namespace, self.dest, values)
+            
+
 class Service(object):
     
     def __init__(self, options, logger):
@@ -189,6 +202,101 @@ class RecordService(Service):
         self.logger.info("已完成发票记录信息的获取")
         self.logger.info("共{}条发票记录".format(len(record_info)))
    
+   
+class InvDlService(Service):
+    
+    def __init__(self, *args, **kwargs):
+        super(InvDlService, self).__init__(*args, **kwargs)
+        self.dl_success = 0
+        self.dl_failed = 0
+        self.dl_failed_list = list()
+        
+        # check save direction is exist
+        if not os.path.exists(self.options.output):
+            os.makedirs(self.options.output, 0o777)
+        
+        self.merge_dir = os.path.join(self.options.output, "merged")
+        if not os.path.exists(self.merge_dir) and self.options.merge:
+            os.makedirs(self.merge_dir, 0o777)
+    
+    def download(self, record_id, etc_id, **kwargs) -> bool:
+        response = handler.invpdf_cld_dl(self.authed_session, etc_id, record_id)
+        if not response.status_code == 200:
+            self.logger.error("文件下载失败，ETC ID: {}, Record ID: {}, Error:".format(
+               etc_id, record_id, response.reason))
+            return False
+        
+        if "car_num" in kwargs:
+            zip_format = "txffp-{month}-{type}-{region}-{car_num}-{record_id}.zip"
+        else:
+            zip_format = "txffp-{month}-{type}-{record_id}.zip"
+        
+        filename = zip_format.format(record_id=record_id, etc_id=etc_id, **kwargs)
+        filepath = os.path.join(self.options.output, filename)
+        with open(filepath, "wb") as f:
+            f.write(response.content)
+        if self.options.merge:
+            pdf.auto_merger(filepath, self.merge_dir)
+        return True
+    
+    def record_dl(self, etc_id, etc_type, **kwargs):
+        rd_handler = handler.InvoiceRecordHandler(
+            session=self.authed_session, logger=self.logger)
+
+        inv_rd = rd_handler.get_record_info(etc_id, self.options.month, etc_type)
+        for page in inv_rd:
+            for info in page:
+                status = self.download(info["inv_id"],
+                                       info["etc_id"],
+                                       month=self.options.month,
+                                       type=etc_type,
+                                       amount=info["amount"],
+                                       **kwargs)
+                if status:
+                    self.dl_success += 1
+                    self.logger.info("文件下载成功")
+                else:
+                    self.dl_failed += 1
+                    self.dl_failed_list.append((info["inv_id"], info["etc_id"]))
+    
+    def etc_dl(self, etc_type):
+        etc_handler = handler.ETCCardHandler(
+            session=self.authed_session, logger=self.logger)
+        
+        etc_info = etc_handler.get_cardlist(etc_type)
+        for page in etc_info:
+            for info in page:
+                self.record_dl(info["cardid"],
+                               etc_type,
+                               car_num=info["carnum"],
+                               region=info["region"])
+                
+    def run(self):
+        self.authed_session = self.login()
+        
+        etc_type = self.options.etc_type.upper()
+        
+        if self.options.etc_id:
+            if etc_type == "ALL":
+                self.record_dl(self.options.etc_id, "COMPANY")
+                self.record_dl(self.options.etc_id, "PERSONAL")
+            elif etc_type == "PERSONAL":
+                self.record_dl(self.options.etc_id, "PERSONAL")
+            else:
+                self.record_dl(self.options.etc_id, "COMPANY")
+            return
+        
+        if self.options.dl_all:
+            print("download all")
+            if etc_type == "ALL":
+                self.etc_dl("COMPANY")
+                self.etc_dl("PERSONAL")
+            elif etc_type == "PERSONAL":
+                self.etc_dl("PERSONAL")
+            else:
+                self.etc_dl("COMPANY")
+            return
+   
 
 def main():
     description = "使用过程中出现问题，请到xxx发起issue。"
@@ -207,7 +315,7 @@ def main():
     
     # invoice record
     service_record = service_subparser.add_parser("record" ,help="查看开票记录")
-    service_record.add_argument("--id", action=IDAction ,dest="etc_id", type=str, required=True, help="指定ETC卡id")
+    service_record.add_argument("--id", action=IDAction ,dest="etc_id", type=str, required=True, help="ETC卡ID")
     service_record.add_argument("--month", action=MonthAction, dest="month", type=str, required=True, help="开票年月，例如: 201805")
     service_record.add_argument("--type", dest="user_type", choices=["personal", "company"],
                                   default="company", help="指定etc卡类型，默认：company")
@@ -215,8 +323,20 @@ def main():
     
     # invoice download
     service_inv_dl = service_subparser.add_parser("inv-dl", help="下载发票")
-    service_inv_dl.add_argument("-e", "--extract", type=bool, default=True, help="自动解压")
-
+    service_inv_dl.add_argument("--month", action=MonthAction, dest="month", type=str,
+                                required=True, help="开票年月，例如: 201805")
+    service_inv_dl.add_argument("--type", dest="etc_type", choices=["personal", "company", "all"],
+                                  default="company", help="指定etc卡类型，默认：company")
+    service_inv_dl.add_argument("-o", "--output", type=str, action=OutputDirAction,
+                                default=os.path.join(os.getcwd(), "txffp"), help="保存位置,默认：当前目录下的txffp文件目录下")
+    service_inv_dl.add_argument("--merge", dest="merge", type=bool, default=True, help="自动解压")
+    service_inv_dl.add_argument("--auth", action=AuthAction, dest="auth", type=str,
+                                help="票根网用户名和密码，格式：username:password")
+    inv_dl_group = service_inv_dl.add_mutually_exclusive_group()
+    inv_dl_group.add_argument("--all", dest="dl_all", type=bool, default=True, help="下载全部发票")
+    inv_dl_group.add_argument("--etcid", action=IDAction, dest="etc_id", type=str, help="ETC卡ID")
+    # inv_dl_group.add_argument("--recordid", action=IDAction, dest="record_id", type=str, help="开票记录ID")
+    
     if len(sys.argv) == 1:
         parser.parse_args(["-h"])
     
