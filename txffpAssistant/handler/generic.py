@@ -250,10 +250,10 @@ class InvoiceRecordHandler(base.GeneralHandler):
                 inv_id=inv_id,
                 etc_id=etc_id,
                 status=status,
+                month=month,
             )
             
             self.logger.info(self.record_info_log_format.format(
-                month=month,
                 page_num=page_num,
                 **self.carinfo_exteral,
                 **record_info))
