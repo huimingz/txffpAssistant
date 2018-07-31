@@ -27,13 +27,13 @@ class ETCCardHandler(base.GeneralHandler):
         "{type_nm:>20}:  {card_type}\n"
     )
     
-    carinfo_exteral = dict(
-        cardid_nm="ETC ID",
-        iccard_nm="IC CARD",
-        carnum_nm="PLATE NUMBER",
-        region_nm="REGION",
-        type_nm="TYPE",
-    )
+    # carinfo_exteral = dict(
+    #     cardid_nm="ETC ID",
+    #     iccard_nm="IC CARD",
+    #     carnum_nm="PLATE NUMBER",
+    #     region_nm="REGION",
+    #     type_nm="TYPE",
+    # )
     
     def api_card_list(self, user_type, page_num=1,
                       type_="invoiceApply", change_view="card",
@@ -106,7 +106,13 @@ class ETCCardHandler(base.GeneralHandler):
             }
             
             self.logger.info(self.carinfo_log_format.format(
-                page_num=page_num, **self.carinfo_exteral, **cardinfo))
+                page_num=page_num,
+                cardid_nm="ETC ID",
+                iccard_nm="IC CARD",
+                carnum_nm="PLATE NUMBER",
+                region_nm="REGION",
+                type_nm="TYPE",
+                **cardinfo))
             yield cardinfo
     
     def _get_cardlist_cardinfo(self, html, card_type, page_num):
@@ -128,7 +134,13 @@ class ETCCardHandler(base.GeneralHandler):
             }
             
             self.logger.info(self.carinfo_log_format.format(
-                page_num=page_num, **self.carinfo_exteral, **cardinfo))
+                page_num=page_num,
+                cardid_nm="ETC ID",
+                iccard_nm="IC CARD",
+                carnum_nm="PLATE NUMBER",
+                region_nm="REGION",
+                type_nm="TYPE",
+                **cardinfo))
             yield cardinfo
 
 
@@ -148,17 +160,17 @@ class InvoiceRecordHandler(base.GeneralHandler):
         "{status_nm:>20}:  {status}\n"
     )
     
-    carinfo_exteral = dict(
-        etc_id_nm="ETC ID",
-        inv_id_nm="RECORD ID",
-        apply_date_nm="APPLY DATETIME",
-        amount_nm="AMOUNT",
-        inv_type_nm="TYPE",
-        company_nm="COMPANY",
-        taxpaper_id_nm="TAXPAPER ID",
-        inv_count_nm="COUNT",
-        status_nm="STATUS",
-    )
+    # carinfo_exteral = dict(
+    #     etc_id_nm="ETC ID",
+    #     inv_id_nm="RECORD ID",
+    #     apply_date_nm="APPLY DATETIME",
+    #     amount_nm="AMOUNT",
+    #     inv_type_nm="TYPE",
+    #     company_nm="COMPANY",
+    #     taxpaper_id_nm="TAXPAPER ID",
+    #     inv_count_nm="COUNT",
+    #     status_nm="STATUS",
+    # )
     
     def api_query_apply(self, card_id, month, page_size=6,
                         user_type="COMPANY", title_name="",
@@ -255,7 +267,15 @@ class InvoiceRecordHandler(base.GeneralHandler):
             
             self.logger.info(self.record_info_log_format.format(
                 page_num=page_num,
-                **self.carinfo_exteral,
+                etc_id_nm="ETC ID",
+                inv_id_nm="RECORD ID",
+                apply_date_nm="APPLY DATETIME",
+                amount_nm="AMOUNT",
+                inv_type_nm="TYPE",
+                company_nm="COMPANY",
+                taxpaper_id_nm="TAXPAPER ID",
+                inv_count_nm="COUNT",
+                status_nm="STATUS",
                 **record_info))
             yield record_info
             
