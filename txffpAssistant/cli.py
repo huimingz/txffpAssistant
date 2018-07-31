@@ -229,6 +229,7 @@ class InvDlService(Service):
             f.write(response.content)
         if self.options.merge:
             pdf.auto_merger(filepath, self.merge_dir)
+            self.logger.info("pdf发票文件合并成功")
         return True
     
     def record_dl(self, etc_id, etc_type, **kwargs):
@@ -279,7 +280,7 @@ class InvDlService(Service):
             return
         
         if self.options.dl_all:
-            print("download all")
+            # print("download all")
             if etc_type == "ALL":
                 self.etc_dl("COMPANY")
                 self.etc_dl("PERSONAL")
