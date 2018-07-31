@@ -109,9 +109,9 @@ class BaseHandler(object):
         if self.sleep_time:
             time.sleep(self.sleep_time)
 
-        self.logger.info("{}请求: {}".format(method, url))
+        self.logger.debug("{}请求: {}".format(method, url))
         response = method_map[method]()
-        self.logger.info(
+        self.logger.debug(
             "获得响应, 状态码: {}, url: {}".format(response.status_code, url))
 
         if raw:
