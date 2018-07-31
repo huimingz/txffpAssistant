@@ -135,7 +135,7 @@ class Service(object):
     def login(self):
         self.auth()
     
-        self.logger.info("模拟登陆...")
+        self.logger.info("模拟登陆中...")
         authed_session = handler.authenticated_session(
             self.username, self.password, logger=self.logger)
         return authed_session
