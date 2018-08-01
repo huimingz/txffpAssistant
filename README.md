@@ -129,4 +129,5 @@ download/
 如果您觉得 txffpAssistant 对你有帮助，欢迎给予我一定的捐助来维持项目的长期发展。
 
 **支付宝扫码捐赠**
+
 ![](doc/pic/donate-alipay.png)
