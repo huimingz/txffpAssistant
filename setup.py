@@ -11,8 +11,8 @@ import sys
 from setuptools import setup, find_packages
 
 
-if sys.version_info < (3, 5):
-    sys.exit("Sorry, Python < 3.5 is not supported")
+if sys.version_info < (3, 4):
+    sys.exit("Sorry, Python < 3.4 is not supported")
 
 with io.open("README.md", "rt", encoding="utf8") as f:
     readme = f.read()
@@ -20,15 +20,16 @@ with io.open("README.md", "rt", encoding="utf8") as f:
 with io.open("txffpAssistant/__init__.py", "rt", encoding="utf8") as f:
     version = re.search(r'__version__ = \"(.*?)\"', f.read()).group(1)
 
+
 setup(
     name="txffpAssistant",
     version=version,
-    packages=find_packages(),
-    url="",
-    license="MIT",
+    packages=["txffpAssistant", "txffpAssistant.handler"],
+    url="https://github.com/Kairu-Madigan/txffpAssistant",
+    license="GNU",
     author="Kyle",
     author_email="kairu_madigan@yahoo.co.jp",
-    description="",
+    description="为解决某票根网反人类设计的一款助手工具",
     long_description=readme,
     include_package_data=True,
     zip_safe=False,
