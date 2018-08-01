@@ -31,6 +31,7 @@ setup(
     author_email="kairu_madigan@yahoo.co.jp",
     description="为解决某票根网反人类设计的一款助手工具",
     long_description=readme,
+    long_description_content_type='text/markdown',
     include_package_data=True,
     zip_safe=False,
     platforms="any",
