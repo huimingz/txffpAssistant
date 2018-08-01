@@ -135,3 +135,7 @@ download/
 **支付宝扫码捐赠**
 
 ![](doc/pic/donate-alipay.png)
+
+**微信扫码捐赠**
+
+![](doc/pic/donate-wechat.png)
