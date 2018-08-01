@@ -325,7 +325,8 @@ def main():
                                 required=True, help="开票年月，例如: 201805")
     service_inv_dl.add_argument("--type", dest="etc_type", choices=["personal", "company", "all"],
                                   default="company", help="etc卡类型，默认：company")
-    service_inv_dl.add_argument("--merge", dest="merge", type=bool, default=False, help="自动合并，默认关闭")
+    service_inv_dl.add_argument("--merge", dest="merge", action="store_true",
+                                help="自动合并，默认关闭")
     service_inv_dl.add_argument("--auth", action=AuthAction, dest="auth", type=str,
                                 help="用户名和密码，格式：user:password")
     inv_dl_group = service_inv_dl.add_mutually_exclusive_group()
