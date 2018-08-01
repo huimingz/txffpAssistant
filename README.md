@@ -121,6 +121,10 @@ download/
 ```
 
 
+## 反馈
+如果在使用过程中出现bug等，请到 [https://github.com/Kairu-Madigan/txffpAssistant](https://github.com/Kairu-Madigan/txffpAssistant) 发起Issue。
+
+
 ## 版权
 该项目根据GNU许可证授权，详细信息请查看[LICENSE](LICENSE)文件。
 
