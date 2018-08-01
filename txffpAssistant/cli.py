@@ -292,7 +292,7 @@ class InvDlService(Service):
    
 
 def main():
-    description = "使用过程中出现问题，请到xxx发起issue。"
+    description = "使用过程中出现问题，请到https://github.com/Kairu-Madigan/txffpAssistant发起issue。"
     parser= argparse.ArgumentParser(description=description)
     parser.add_argument("-d", "--debug", action="store_true", help="debug模式")
     parser.add_argument("-s", "--simple", action="store_true", dest="simple", help="精简模式")
