@@ -5,4 +5,4 @@
 # @Contact : kairu_madigan@yahoo.co.jp
 # @Date    : 2018/07/22 15:44
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
