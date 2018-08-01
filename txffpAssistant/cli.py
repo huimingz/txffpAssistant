@@ -359,9 +359,12 @@ def main():
             command = command.title()
 
         class_name = command + "Service"
-        service = eval(class_name)(options, logger)
-        service.run()
-
+        try:
+            service = eval(class_name)(options, logger)
+            service.run()
+        except Exception as err:
+            print(err, file=sys.stderr)
+            sys.exit(1)
 
 if __name__ == "__main__":
     main()
