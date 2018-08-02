@@ -43,7 +43,7 @@ $ txffp record --month 201805 --id xxx --auth user:password
 下载2018年5月份的全部发票并合并：
 
 ```
-$ txffp inv-dl --month 201805 --auth user:password --all -o ./
+$ txffp inv-dl --merge --month 201805 --auth user:password --all -o ./
 ```
 
 
