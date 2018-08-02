@@ -26,6 +26,8 @@ $ workon txffp_assistant
 $ pip install --upgrade txffpAssistant
 ```
 
+![pip install txffpAssistant](doc/pic/pip-install-txffpAssistant.gif "install txffpAssistant")
+
 
 ## 使用
 查看ETC卡信息：
@@ -103,6 +105,8 @@ optional arguments:
   -o OUTPUT, --output OUTPUT
                         保存位置, 默认：当前目录的txffp目录下
 ```
+
+![help info](doc/pic/txffp-usage.gif "help message")
 
 
 ## pdf合并说明
