@@ -430,6 +430,9 @@ def main():
         try:
             service = eval(class_name)(options, logger)
             service.run()
+        except KeyboardInterrupt:
+            print("已终止程序...", file=sys.stderr)
+            sys.exit(1)
         except Exception as err:
             if options.debug:
                 import traceback
