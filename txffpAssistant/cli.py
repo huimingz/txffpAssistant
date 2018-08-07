@@ -12,6 +12,8 @@ import os
 import string
 import sys
 
+import prettytable
+
 from . import handler
 from . import logger as log
 from . import pdf
@@ -152,6 +154,20 @@ class EtcService(Service):
         etcinfo = [ei for ei_iter in etc for ei in ei_iter]
         return etcinfo
     
+    @staticmethod
+    def pt_add_rows(pt: prettytable.PrettyTable,
+                      etcinfo: [handler.CardInfo],
+                      row_names) -> str:
+        pt.clear_rows()
+        
+        for index, info in enumerate(etcinfo, 1):
+            row = [getattr(info, row_name) for row_name in row_names]
+            row.insert(0, index)
+            pt.add_row(row)
+        pt_string = pt.get_string()
+        pt.clear_rows()
+        return pt_string
+        
     def run(self):
         authed_session = self.login()
         
@@ -168,13 +184,21 @@ class EtcService(Service):
             c_etcinfo = self.get_etc_info(etc_handler, "COMPANY")
 
         self.logger.info("已完成ETC卡信息的获取")
+        field_names = ["ID", "ETC Type", "Region", "Plate Number", "Page", "IC Card", "ETC ID"]
+        row_names = ["card_type", "region", "carnum", "page_num", "iccard", "etc_id"]
+        pt = prettytable.PrettyTable(field_names)
+
         local_keys = locals().keys()
         if "p_etcinfo" in local_keys and "c_etcinfo" in local_keys:
-            self.logger.info("单位卡{}张，个人卡{}张".format(len(c_etcinfo), len(p_etcinfo)))
+            self.logger.info("\n" + self.pt_add_rows(pt, p_etcinfo, row_names))
+            self.logger.info("\n" + self.pt_add_rows(pt, c_etcinfo, row_names))
+            # self.logger.info("单位卡{}张，个人卡{}张".format(len(c_etcinfo), len(p_etcinfo)))
         elif "p_etcinfo" in local_keys:
-            self.logger.info("个人卡{}张".format(len(p_etcinfo)))
+            self.logger.info("\n" + self.pt_add_rows(pt, p_etcinfo, row_names))
+            # self.logger.info("个人卡{}张".format(len(p_etcinfo)))
         elif "c_etcinfo" in local_keys:
-            self.logger.info("单位卡{}张".format(len(c_etcinfo)))
+            self.logger.info("\n" + self.pt_add_rows(pt, c_etcinfo, row_names))
+            # self.logger.info("单位卡{}张".format(len(c_etcinfo)))
         
         
 class RecordService(Service):
@@ -192,7 +216,19 @@ class RecordService(Service):
         inv_rd = rd_handler.get_record_info(card_id, month, user_type)
         record_info = [ri for ri_iter in inv_rd for ri in ri_iter]
         self.logger.info("已完成发票记录信息的获取")
-        self.logger.info("共{}条发票记录".format(len(record_info)))
+        
+        field_names = ["ID", "年月", "申请时间", "抬头", "纳税人识别号/统一社会信用代码", "类型",
+                       "金额", "数量", "状态", "页码", "ETC ID", "Invoice ID"]
+        row_names = ["month", "date", "company", "taxpaper_id", "inv_type", "amount",
+                     "inv_count", "status", "page_num", "etc_id", "inv_id"]
+        pt = prettytable.PrettyTable(field_names)
+        
+        for index, info in enumerate(record_info, 1):
+            row = [getattr(info, row_name) for row_name in row_names]
+            row.insert(0, index)
+            pt.add_row(row)
+        self.logger.info("\n" + pt.get_string())
+        # self.logger.info("共{}条发票记录".format(len(record_info)))
    
    
 class InvDlService(Service):
