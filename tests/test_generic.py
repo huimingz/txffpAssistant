@@ -86,7 +86,7 @@ class InvoiceRecordTestCase(unittest.TestCase):
             html = f.read()
         
         ir = generic.InvoiceRecordHandler(logger=logger)
-        record_infos = ir._get_query_apply_data(html, 1, 201805, "xxxx")
+        record_infos = ir._get_query_apply_data(html, 1, 201805, "xxxx", "COMPANY")
         
         self.assertEqual(record_infos.__class__.__name__, "generator")
         record_info_list = [record_info for record_info in record_infos]
