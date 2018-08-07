@@ -267,7 +267,6 @@ class InvDlService(Service):
                 month=record_info.month, type=etc_type, record_id=record_id)
             filepath = os.path.join(self.options.output, filename)
 
-        
         with open(filepath, "wb") as f:
             f.write(response.content)
         if self.options.merge:
