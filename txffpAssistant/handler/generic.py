@@ -14,13 +14,40 @@ from txffpAssistant import exceptions
 from txffpAssistant.handler import base
 
 
-__all__ = ["ETCCardHandler", "InvoiceRecordHandler", "invpdf_cld_dl"]
+__all__ = ["CardInfo", "ETCCardHandler", "InvoiceRecordHandler", "invpdf_cld_dl"]
+
+
+class CardInfo(object):
+    
+    def __init__(self, **kwargs):
+        self.region = kwargs.get("region") or None
+        self.etc_id = kwargs.get("etc_id") or None
+        self.iccard = kwargs.get("iccard") or None
+        self.carnum = kwargs.get("carnum") or None
+        self.page_num = kwargs.get("page_num") or None
+        self.card_type = kwargs.get("card_type") or None
+
+
+class RecordInfo(object):
+    
+    def __init__(self, **kwargs):
+        self.date = kwargs.get("date") or None
+        self.month = kwargs.get("month") or None
+        self.etc_id = kwargs.get("etc_id") or None
+        self.inv_id = kwargs.get("inv_id") or None
+        self.status = kwargs.get("status") or None
+        self.amount = kwargs.get("amount") or None
+        self.company = kwargs.get("company") or None
+        self.page_num = kwargs.get("page_num") or None
+        self.inv_type = kwargs.get("inv_type") or None
+        self.inv_count = kwargs.get("inv_count") or None
+        self.taxpaper_id = kwargs.get("taxpaper_id") or None
 
 
 class ETCCardHandler(base.GeneralHandler):
     carinfo_log_format = (
         "etc卡信息（第{page_num}页）\n"
-        "{cardid_nm:>20}:  {cardid}\n"
+        "{etc_id_nm:>20}:  {etc_id}\n"
         "{iccard_nm:>20}:  {iccard}\n"
         "{carnum_nm:>20}:  {carnum}\n"
         "{region_nm:>20}:  {region}\n"
@@ -96,23 +123,30 @@ class ETCCardHandler(base.GeneralHandler):
             region = card_node.xpath("./dt/text()")[0]
             iccard = card_node.xpath("./dd[1]/text()")[0]
             carnum = card_node.xpath("./dd[2]/text()")[0]
-            cardid = card_node.get("href").split("/")[-2]
-            cardinfo = {
-                "region": region,
-                "iccard": iccard.strip()[-20:],
-                "carnum": carnum.strip()[-7:],
-                "cardid": cardid,
-                "card_type": card_type,
-            }
+            etc_id = card_node.get("href").split("/")[-2]
             
-            self.logger.info(self.carinfo_log_format.format(
-                page_num=page_num,
-                cardid_nm="ETC ID",
+            cardinfo = CardInfo()
+            cardinfo.region = region
+            cardinfo.etc_id = etc_id
+            cardinfo.iccard = iccard.strip()[-20:]
+            cardinfo.carnum = carnum.strip()[-7:]
+            cardinfo.page_num = page_num
+            cardinfo.card_type = card_type
+            # cardinfo = {
+            #     "region": region,
+            #     "iccard": iccard.strip()[-20:],
+            #     "carnum": carnum.strip()[-7:],
+            #     "cardid": cardid,
+            #     "card_type": card_type,
+            # }
+            
+            self.logger.debug(self.carinfo_log_format.format(
+                etc_id_nm="ETC ID",
                 iccard_nm="IC CARD",
                 carnum_nm="PLATE NUMBER",
                 region_nm="REGION",
                 type_nm="TYPE",
-                **cardinfo))
+                **cardinfo.__dict__))
             yield cardinfo
     
     def _get_cardlist_cardinfo(self, html, card_type, page_num):
@@ -124,23 +158,32 @@ class ETCCardHandler(base.GeneralHandler):
             region = card_node.xpath("./a/dt/text()")[0]
             iccard = card_node.xpath("./a/dd[1]/text()")[0]
             carnum = card_node.xpath("./a/dd[2]/text()")[0]
-            cardid = card_node.xpath("./a")[0].get("onclick")[13:-2]
-            cardinfo = {
-                "region": region,
-                "iccard": iccard.strip()[-20:],
-                "carnum": carnum.strip()[4:],
-                "cardid": cardid,
-                "card_type": card_type,
-            }
+            etc_id = card_node.xpath("./a")[0].get("onclick")[13:-2]
+
+            cardinfo = type("CardInfo", (), {})
+            cardinfo.region = region
+            cardinfo.etc_id = etc_id
+            cardinfo.iccard = iccard.strip()[-20:]
+            cardinfo.carnum = carnum.strip()[4:]
+            cardinfo.page_num = page_num
+            cardinfo.card_type = card_type
             
-            self.logger.info(self.carinfo_log_format.format(
-                page_num=page_num,
-                cardid_nm="ETC ID",
+            # cardinfo = {
+            #     "region": region,
+            #     "iccard": iccard.strip()[-20:],
+            #     "carnum": carnum.strip()[4:],
+            #     "cardid": cardid,
+            #     "card_type": card_type,
+            #     "page_num": page_num
+            # }
+            
+            self.logger.debug(self.carinfo_log_format.format(
+                etc_id_nm="ETC ID",
                 iccard_nm="IC CARD",
                 carnum_nm="PLATE NUMBER",
                 region_nm="REGION",
                 type_nm="TYPE",
-                **cardinfo))
+                **cardinfo.__dict__))
             yield cardinfo
 
 
@@ -151,7 +194,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
         "{month}发票记录信息（第{page_num}页）\n"
         "{etc_id_nm:>20}:  {etc_id}\n"
         "{inv_id_nm:>20}:  {inv_id}\n"
-        "{apply_date_nm:>20}:  {apply_date}\n"
+        "{apply_date_nm:>20}:  {date}\n"
         "{amount_nm:>20}:  {amount}\n"
         "{inv_type_nm:>20}:  {inv_type}\n"
         "{company_nm:>20}:  {company}\n"
@@ -252,21 +295,33 @@ class InvoiceRecordHandler(base.GeneralHandler):
             company = re.sub("\n|\s", "", company)[5:]
             inv_id = inv_id.get("href").split("/")[-4]
             
-            record_info = dict(
-                taxpaper_id=taxpaper_id,
-                apply_date=apply_date,
-                inv_count=inv_count,
-                inv_type=inv_type,
-                company=company,
-                amount=amount,
-                inv_id=inv_id,
-                etc_id=etc_id,
-                status=status,
-                month=month,
-            )
+            record_info = RecordInfo()
+            record_info.date = apply_date
+            record_info.month = month
+            record_info.etc_id = etc_id
+            record_info.inv_id = inv_id
+            record_info.status = status
+            record_info.amount = amount
+            record_info.company = company
+            record_info.page_num = page_num
+            record_info.inv_type = inv_type
+            record_info.inv_count = inv_count
+            record_info.taxpaper_id = taxpaper_id
             
-            self.logger.info(self.record_info_log_format.format(
-                page_num=page_num,
+            # record_info = dict(
+            #     taxpaper_id=taxpaper_id,
+            #     apply_date=apply_date,
+            #     inv_count=inv_count,
+            #     inv_type=inv_type,
+            #     company=company,
+            #     amount=amount,
+            #     inv_id=inv_id,
+            #     etc_id=etc_id,
+            #     status=status,
+            #     month=month,
+            # )
+            
+            self.logger.debug(self.record_info_log_format.format(
                 etc_id_nm="ETC ID",
                 inv_id_nm="RECORD ID",
                 apply_date_nm="APPLY DATETIME",
@@ -276,7 +331,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
                 taxpaper_id_nm="TAXPAPER ID",
                 inv_count_nm="COUNT",
                 status_nm="STATUS",
-                **record_info))
+                **record_info.__dict__))
             yield record_info
             
 

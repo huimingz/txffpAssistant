@@ -26,7 +26,7 @@ class ETCCardHandlerTestCase(unittest.TestCase):
         self.etc = generic.ETCCardHandler(logger=logger)
     
     def test_get_cardlist_cardinfo(self):
-        with decorators.log_level(self.etc.logger, logging.INFO):
+        with decorators.log_level(self.etc.logger, logging.DEBUG):
             filepath = os.path.join(base_dir, "html/card_list_company_response.html")
             with open(filepath) as f:
                 html = f.read()
@@ -86,7 +86,7 @@ class InvoiceRecordTestCase(unittest.TestCase):
             html = f.read()
         
         ir = generic.InvoiceRecordHandler(logger=logger)
-        record_infos = ir._get_query_apply_data(html, 1, 201805)
+        record_infos = ir._get_query_apply_data(html, 1, 201805, "xxxx")
         
         self.assertEqual(record_infos.__class__.__name__, "generator")
         record_info_list = [record_info for record_info in record_infos]

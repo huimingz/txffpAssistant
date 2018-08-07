@@ -9,10 +9,11 @@
 
 from .auth import authenticated_session, AuthHandler
 from .base import BaseHandler, GeneralHandler
-from .generic import ETCCardHandler, InvoiceRecordHandler, invpdf_cld_dl
+from .generic import (CardInfo, ETCCardHandler, InvoiceRecordHandler,
+                      invpdf_cld_dl)
 
 
 __all__ = [
-    "authenticated_session", "AuthHandler", "BaseHandler", "ETCCardHandler",
-    "GeneralHandler", "InvoiceRecordHandler", "invpdf_cld_dl"
+    "authenticated_session", "AuthHandler", "BaseHandler", "CardInfo",
+    "ETCCardHandler", "GeneralHandler", "InvoiceRecordHandler", "invpdf_cld_dl"
 ]
