@@ -34,13 +34,14 @@ class RecordInfo(object):
         self.date = kwargs.get("date") or None
         self.month = kwargs.get("month") or None
         self.etc_id = kwargs.get("etc_id") or None
-        self.inv_id = kwargs.get("inv_id") or None
         self.status = kwargs.get("status") or None
         self.amount = kwargs.get("amount") or None
         self.company = kwargs.get("company") or None
         self.page_num = kwargs.get("page_num") or None
         self.inv_type = kwargs.get("inv_type") or None
+        self.etc_type = kwargs.get("etc_type") or None
         self.inv_count = kwargs.get("inv_count") or None
+        self.record_id = kwargs.get("inv_id") or None
         self.taxpaper_id = kwargs.get("taxpaper_id") or None
 
 
@@ -193,7 +194,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
     record_info_log_format = (
         "{month}发票记录信息（第{page_num}页）\n"
         "{etc_id_nm:>20}:  {etc_id}\n"
-        "{inv_id_nm:>20}:  {inv_id}\n"
+        "{record_id_nm:>20}:  {record_id}\n"
         "{apply_date_nm:>20}:  {date}\n"
         "{amount_nm:>20}:  {amount}\n"
         "{inv_type_nm:>20}:  {inv_type}\n"
@@ -268,7 +269,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
                 raise exceptions.NoneResponseError("获取发票记录信息失败，原因：服务器响应为空")
             
             record_info_iter = self._get_query_apply_data(
-                response.text, page_num, month, card_id)
+                response.text, page_num, month, card_id, user_type)
             yield record_info_iter
             
             if self.has_next_page(html=response.text):
@@ -276,7 +277,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
             else:
                 break
     
-    def _get_query_apply_data(self, html, page_num, month, etc_id):
+    def _get_query_apply_data(self, html, page_num, month, etc_id, user_type):
         node = etree.HTML(html)
         record_nodes = node.xpath("//table[@class='table_wdfp']")
         
@@ -286,26 +287,27 @@ class InvoiceRecordHandler(base.GeneralHandler):
             inv_count = record_node.xpath(".//tr[2]/td[1]/table/tr[1]/td[3]/span/text()")[0]
             inv_type = record_node.xpath("./tr[1]/td/table/tr[1]/th[3]/text()")[0]
             company = record_node.xpath(".//tr[2]/td[1]/table/tr[1]/td[1]/text()")[0]
-            inv_id = record_node.xpath("./tr[1]/td/table/tr/th[4]/a[1]")[0]
+            record_id = record_node.xpath("./tr[1]/td/table/tr/th[4]/a[1]")[0]
             amount = record_node.xpath("./tr[1]/td/table/tr[1]/th[2]/span/text()")[0][2:]
             status = record_node.xpath(".//tr[2]/td[1]/table/tr[1]/td[4]/span/text()")[0]
             
             taxpaper_id = re.sub("\n|\s", "", taxpaper_id)[16:]
             apply_date = apply_date[7:]
             company = re.sub("\n|\s", "", company)[5:]
-            inv_id = inv_id.get("href").split("/")[-4]
+            record_id = record_id.get("href").split("/")[-4]
             
             record_info = RecordInfo()
             record_info.date = apply_date
             record_info.month = month
             record_info.etc_id = etc_id
-            record_info.inv_id = inv_id
             record_info.status = status
             record_info.amount = amount
             record_info.company = company
             record_info.page_num = page_num
             record_info.inv_type = inv_type
+            record_info.etc_type = user_type
             record_info.inv_count = inv_count
+            record_info.record_id = record_id
             record_info.taxpaper_id = taxpaper_id
             
             # record_info = dict(
@@ -323,7 +325,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
             
             self.logger.debug(self.record_info_log_format.format(
                 etc_id_nm="ETC ID",
-                inv_id_nm="RECORD ID",
+                record_id_nm="RECORD ID",
                 apply_date_nm="APPLY DATETIME",
                 amount_nm="AMOUNT",
                 inv_type_nm="TYPE",

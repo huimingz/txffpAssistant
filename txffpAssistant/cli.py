@@ -220,7 +220,7 @@ class RecordService(Service):
         field_names = ["ID", "年月", "申请时间", "抬头", "纳税人识别号/统一社会信用代码", "类型",
                        "金额", "数量", "状态", "页码", "ETC ID", "Invoice ID"]
         row_names = ["month", "date", "company", "taxpaper_id", "inv_type", "amount",
-                     "inv_count", "status", "page_num", "etc_id", "inv_id"]
+                     "inv_count", "status", "page_num", "etc_id", "record_id"]
         pt = prettytable.PrettyTable(field_names)
         
         for index, info in enumerate(record_info, 1):
@@ -266,7 +266,7 @@ class InvDlService(Service):
             filename = filename.format(
                 month=record_info.month, type=etc_type, record_id=record_id)
             filepath = os.path.join(self.options.output, filename)
-        
+
         
         with open(filepath, "wb") as f:
             f.write(response.content)
@@ -292,7 +292,7 @@ class InvDlService(Service):
         inv_rd = rd_handler.get_record_info(etc_id, self.options.month, etc_type)
         for page in inv_rd:
             for info in page:
-                filename = self.download(info.inv_id,
+                filename = self.download(info.record_id,
                                          info.etc_id,
                                          record_info=info,
                                          etc_type=etc_type,
@@ -303,11 +303,11 @@ class InvDlService(Service):
                     
                     if "etc_info" not in kwargs:
                         row = [len(pt._rows) + 1, info.etc_type, info.month, info.inv_count,
-                               info.amount, info.page_num, info.etc_id, info.inv_id, filename]
+                               info.amount, info.page_num, info.etc_id, info.record_id, filename]
                     else:
                         row = [len(pt._rows) + 1, info.etc_type, etc_info.region, etc_info.carnum,
                                info.month, info.inv_count, info.amount, info.page_num, info.etc_id,
-                               info.inv_id, filename]
+                               info.record_id, filename]
                     pt.add_row(row)
                 else:
                     self.dl_failed += 1
