@@ -432,7 +432,11 @@ def main():
             service = eval(class_name)(options, logger)
             service.run()
         except Exception as err:
-            print(err, file=sys.stderr)
+            if options.debug:
+                import traceback
+                traceback.print_exc()
+            else:
+                print(err, file=sys.stderr)
             sys.exit(1)
 
 if __name__ == "__main__":
