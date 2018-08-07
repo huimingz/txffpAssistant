@@ -8,7 +8,7 @@ import io
 import re
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 
 if sys.version_info < (3, 4):
@@ -44,7 +44,7 @@ setup(
     ],
     classifiers=[
         "Intended Audience :: Other Audience",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: GNU License",
         "Natural Language :: Chinese (Simplified)",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
