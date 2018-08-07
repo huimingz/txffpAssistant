@@ -311,7 +311,7 @@ class InvDlService(Service):
                     pt.add_row(row)
                 else:
                     self.dl_failed += 1
-                    self.dl_failed_list.append((info["inv_id"], info["etc_id"]))
+                    self.dl_failed_list.append(info)
 
         if "etc_info" not in kwargs:
             self.logger.info("\n" + pt.get_string())
