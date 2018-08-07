@@ -247,58 +247,90 @@ class InvDlService(Service):
         if not os.path.exists(self.merge_dir) and self.options.merge:
             os.makedirs(self.merge_dir, 0o777)
     
-    def download(self, record_id, etc_id, **kwargs) -> bool:
+    def download(self, record_id, etc_id, record_info, etc_type, **kwargs):
         response = handler.invpdf_cld_dl(self.authed_session, etc_id, record_id)
         if not response.status_code == 200:
             self.logger.error("文件下载失败，ETC ID: {}, Record ID: {}, Error:".format(
                etc_id, record_id, response.reason))
-            return False
+            return
         
-        if "car_num" in kwargs:
-            zip_format = "txffp-{month}-{type}-{region}-{car_num}-{record_id}.zip"
+        if "etc_info" in kwargs:
+            etc_info = kwargs["etc_info"]
+            filename = "txffp-{month}-{type}-{region}-{carnum}-{record_id}.zip"
+            filename = filename.format(
+                month=record_info.month, type=etc_type, region=etc_info.region,
+                carnum=etc_info.carnum, record_id=record_id)
+            filepath = os.path.join(self.options.output, filename)
         else:
-            zip_format = "txffp-{month}-{type}-{record_id}.zip"
+            filename = "txffp-{month}-{type}-{record_id}.zip"
+            filename = filename.format(
+                month=record_info.month, type=etc_type, record_id=record_id)
+            filepath = os.path.join(self.options.output, filename)
         
-        filename = zip_format.format(record_id=record_id, etc_id=etc_id, **kwargs)
-        filepath = os.path.join(self.options.output, filename)
+        
         with open(filepath, "wb") as f:
             f.write(response.content)
         if self.options.merge:
             pdf.auto_merger(filepath, self.merge_dir)
             self.logger.info("pdf发票文件合并成功")
-        return True
+        return filename
     
     def record_dl(self, etc_id, etc_type, **kwargs):
         rd_handler = handler.InvoiceRecordHandler(
             session=self.authed_session, logger=self.logger)
-
+        
+        if "etc_info" not in kwargs:
+            field_names = ["ID", "ETC类型", "年月", "发票数量", "金额",
+                           "页码", "ETC ID", "Record ID", "文件名"]
+            pt = prettytable.PrettyTable(field_names)
+            pt.align["金额"] = "r"
+            pt.align["发票数量"] = "l"
+        else:
+            etc_info = kwargs["etc_info"]
+            pt = kwargs["pt"]
+        
         inv_rd = rd_handler.get_record_info(etc_id, self.options.month, etc_type)
         for page in inv_rd:
             for info in page:
-                status = self.download(info["inv_id"],
-                                       info["etc_id"],
-                                       month=self.options.month,
-                                       type=etc_type,
-                                       amount=info["amount"],
-                                       **kwargs)
-                if status:
+                filename = self.download(info.inv_id,
+                                         info.etc_id,
+                                         record_info=info,
+                                         etc_type=etc_type,
+                                         **kwargs)
+                if filename:
                     self.dl_success += 1
-                    self.logger.info("文件下载成功")
+                    self.logger.info("[{}] 下载成功".format(filename))
+                    
+                    if "etc_info" not in kwargs:
+                        row = [len(pt._rows) + 1, info.etc_type, info.month, info.inv_count,
+                               info.amount, info.page_num, info.etc_id, info.inv_id, filename]
+                    else:
+                        row = [len(pt._rows) + 1, info.etc_type, etc_info.region, etc_info.carnum,
+                               info.month, info.inv_count, info.amount, info.page_num, info.etc_id,
+                               info.inv_id, filename]
+                    pt.add_row(row)
                 else:
                     self.dl_failed += 1
                     self.dl_failed_list.append((info["inv_id"], info["etc_id"]))
+
+        if "etc_info" not in kwargs:
+            self.logger.info("\n" + pt.get_string())
     
     def etc_dl(self, etc_type):
         etc_handler = handler.ETCCardHandler(
             session=self.authed_session, logger=self.logger)
         
         etc_info = etc_handler.get_cardlist(etc_type)
+        field_names = ["ID", "ETC类型", "区域", "车牌号", "年月", "发票数量",
+                       "金额", "页码", "ETC ID", "Record ID", "文件名"]
+        pt = prettytable.PrettyTable(field_names)
+        pt.align["金额"] = "r"
+        pt.align["发票数量"] = "l"
+        
         for page in etc_info:
             for info in page:
-                self.record_dl(info["cardid"],
-                               etc_type,
-                               car_num=info["carnum"],
-                               region=info["region"])
+                self.record_dl(info.etc_id, etc_type, etc_info=info, pt=pt)
+        self.logger.info("\n" + pt.get_string())
                 
     def run(self):
         self.authed_session = self.login()
