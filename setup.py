@@ -45,7 +45,7 @@ setup(
     ],
     classifiers=[
         "Intended Audience :: Other Audience",
-        "License :: OSI Approved :: GNU License",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Natural Language :: Chinese (Simplified)",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
