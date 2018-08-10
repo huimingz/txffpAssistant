@@ -26,7 +26,7 @@ $ workon txffp_assistant
 $ pip install --upgrade txffpAssistant
 ```
 
-![pip install txffpAssistant](doc/pic/pip-install-txffpAssistant.gif "install txffpAssistant")
+![pip install txffpAssistant](docs/media/img/pip-install-txffpAssistant.gif "install txffpAssistant")
 
 
 ## 使用
@@ -106,7 +106,7 @@ optional arguments:
                         保存位置, 默认：当前目录的txffp目录下
 ```
 
-![help info](doc/pic/txffp-usage.gif "help message")
+![help info](docs/media/img/txffp-usage.gif "help message")
 
 
 ## pdf合并说明
@@ -138,8 +138,8 @@ download/
 
 **支付宝扫码捐赠**
 
-![](doc/pic/donate-alipay.png)
+![](docs/media/img/donate-alipay.png)
 
 **微信扫码捐赠**
 
-![](doc/pic/donate-wechat.png)
+![](docs/media/img/donate-wechat.png)
