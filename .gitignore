@@ -197,7 +197,6 @@ gen
 **/migrations/00*.py
 assistant/log/*
 download/
-docs
 *.sqlite
 /txffp_assistant.sublime-workspace
 /txffp_assistant.sublime-project
