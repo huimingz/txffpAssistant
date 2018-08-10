@@ -29,6 +29,12 @@ $ pip install --upgrade txffpAssistant
 ![pip install txffpAssistant](docs/media/img/pip-install-txffpAssistant.gif "install txffpAssistant")
 
 
+**卸载:**
+
+```shell
+$ pip uninstall txffpAssistant
+```
+
 ## 使用
 查看ETC卡信息：
 
