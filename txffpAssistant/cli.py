@@ -280,10 +280,10 @@ class InvDlService(Service):
         return filename
     
     def record_dl(self, etc_id, etc_type, **kwargs):
-        if self.options.dl_all:
-            sac = False
-        else:
+        if self.options.etc_id:
             sac = True
+        else:
+            sac = False
             
         rd_handler = handler.InvoiceRecordHandler(
             session=self.authed_session, logger=self.logger, session_auto_close=sac)
