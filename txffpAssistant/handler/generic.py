@@ -18,6 +18,7 @@ __all__ = ["CardInfo", "ETCCardHandler", "InvoiceRecordHandler", "invpdf_cld_dl"
 
 
 class CardInfo(object):
+    __slots__ = ["region", "etc_id", "iccard", "carnum", "page_num", "card_type"]
     
     def __init__(self, **kwargs):
         self.region = kwargs.get("region") or None
@@ -29,6 +30,9 @@ class CardInfo(object):
 
 
 class RecordInfo(object):
+    __slots__ = ["date", "month", "etc_id", "status", "amount", "company",
+                 "page_num", "inv_type", "etc_type", "inv_count", "record_id",
+                 "taxpaper_id"]
     
     def __init__(self, **kwargs):
         self.date = kwargs.get("date") or None
