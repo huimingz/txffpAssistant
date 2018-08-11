@@ -30,13 +30,14 @@ class BaseHandler(object):
 
     def __init__(self, cookie_str=None, cookie_jar=None,
                  headers=None, sleep_time=None, logger=None,
-                 encoding="utf-8", session=None):
+                 encoding="utf-8", session=None, session_auto_close=True):
         self.cookie_str = cookie_str
         self.cookie_jar = cookie_jar if cookie_jar else RequestsCookieJar()
         self.sleep_time = sleep_time
         self.req_header = dict()
         self.encoding = encoding
         self.logger = logger if logger else logging.getLogger(__file__)
+        self.session_auto_close = session_auto_close
         
         self.req_header.update(DEFAULT_HEADER)
         if headers:
@@ -49,7 +50,7 @@ class BaseHandler(object):
         self.cookie_init()
         
     def __del__(self):
-        if hasattr(self, "_session"):
+        if hasattr(self, "_session") and self.session_auto_close:
             self.logger.debug("关闭会话连接")
             self.session.close()
 
