@@ -26,5 +26,3 @@ def cookieStr2dict(cookie_text):
         if kv[0] not in cookie_dict:
             cookie_dict[kv[0]] = kv[1]
     return cookie_dict
-
-
