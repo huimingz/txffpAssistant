@@ -45,7 +45,7 @@ class RecordInfo(object):
         self.inv_type = kwargs.get("inv_type") or None
         self.etc_type = kwargs.get("etc_type") or None
         self.inv_count = kwargs.get("inv_count") or None
-        self.record_id = kwargs.get("inv_id") or None
+        self.record_id = kwargs.get("record_id") or None
         self.taxpaper_id = kwargs.get("taxpaper_id") or None
 
 
@@ -125,18 +125,15 @@ class ETCCardHandler(base.GeneralHandler):
             "//dl[contains(@class,'etc_card_dl')]/div/a[2]")
         
         for card_node in card_nodes:
-            region = card_node.xpath("./dt/text()")[0]
-            iccard = card_node.xpath("./dd[1]/text()")[0]
-            carnum = card_node.xpath("./dd[2]/text()")[0]
-            etc_id = card_node.get("href").split("/")[-2]
-            
-            cardinfo = CardInfo()
-            cardinfo.region = region
-            cardinfo.etc_id = etc_id
-            cardinfo.iccard = iccard.strip()[-20:]
-            cardinfo.carnum = carnum.strip()[-7:]
-            cardinfo.page_num = page_num
-            cardinfo.card_type = card_type
+            data = dict(
+                region=card_node.xpath("./dt/text()")[0],
+                etc_id=card_node.get("href").split("/")[-2],
+                iccard=card_node.xpath("./dd[1]/text()")[0].strip()[-20:],
+                carnum = card_node.xpath("./dd[2]/text()")[0].strip()[-7:],
+                page_num=page_num,
+                card_type=card_type
+            )
+            cardinfo = CardInfo(**data)
             # cardinfo = {
             #     "region": region,
             #     "iccard": iccard.strip()[-20:],
@@ -151,7 +148,7 @@ class ETCCardHandler(base.GeneralHandler):
                 carnum_nm="PLATE NUMBER",
                 region_nm="REGION",
                 type_nm="TYPE",
-                **cardinfo.__dict__))
+                **data))
             yield cardinfo
     
     def _get_cardlist_cardinfo(self, html, card_type, page_num):
@@ -160,18 +157,15 @@ class ETCCardHandler(base.GeneralHandler):
             "//dl[@class='etc_card_dl']/div[@class='etc_card_div']")
         
         for card_node in card_nodes:
-            region = card_node.xpath("./a/dt/text()")[0]
-            iccard = card_node.xpath("./a/dd[1]/text()")[0]
-            carnum = card_node.xpath("./a/dd[2]/text()")[0]
-            etc_id = card_node.xpath("./a")[0].get("onclick")[13:-2]
-
-            cardinfo = type("CardInfo", (), {})
-            cardinfo.region = region
-            cardinfo.etc_id = etc_id
-            cardinfo.iccard = iccard.strip()[-20:]
-            cardinfo.carnum = carnum.strip()[4:]
-            cardinfo.page_num = page_num
-            cardinfo.card_type = card_type
+            data = dict(
+                region=card_node.xpath("./a/dt/text()")[0],
+                iccard=card_node.xpath("./a/dd[1]/text()")[0].strip()[-20:],
+                carnum=card_node.xpath("./a/dd[2]/text()")[0].strip()[4:],
+                etc_id=card_node.xpath("./a")[0].get("onclick")[13:-2],
+                page_num=page_num,
+                card_type=card_type
+            )
+            cardinfo = CardInfo(**data)
             
             # cardinfo = {
             #     "region": region,
@@ -188,7 +182,7 @@ class ETCCardHandler(base.GeneralHandler):
                 carnum_nm="PLATE NUMBER",
                 region_nm="REGION",
                 type_nm="TYPE",
-                **cardinfo.__dict__))
+                **data))
             yield cardinfo
 
 
@@ -286,33 +280,23 @@ class InvoiceRecordHandler(base.GeneralHandler):
         record_nodes = node.xpath("//table[@class='table_wdfp']")
         
         for record_node in record_nodes:
-            taxpaper_id = record_node.xpath(".//tr[2]/td[1]/table/tr[1]/td[2]/text()")[0]
-            apply_date = record_node.xpath("./tr[1]/td/table/tr[1]/th[1]/text()")[0]
-            inv_count = record_node.xpath(".//tr[2]/td[1]/table/tr[1]/td[3]/span/text()")[0]
-            inv_type = record_node.xpath("./tr[1]/td/table/tr[1]/th[3]/text()")[0]
-            company = record_node.xpath(".//tr[2]/td[1]/table/tr[1]/td[1]/text()")[0]
-            record_id = record_node.xpath("./tr[1]/td/table/tr/th[4]/a[1]")[0]
-            amount = record_node.xpath("./tr[1]/td/table/tr[1]/th[2]/span/text()")[0][2:]
-            status = record_node.xpath(".//tr[2]/td[1]/table/tr[1]/td[4]/span/text()")[0]
-            
-            taxpaper_id = re.sub("\n|\s", "", taxpaper_id)[16:]
-            apply_date = apply_date[7:]
-            company = re.sub("\n|\s", "", company)[5:]
-            record_id = record_id.get("href").split("/")[-4]
-            
-            record_info = RecordInfo()
-            record_info.date = apply_date
-            record_info.month = month
-            record_info.etc_id = etc_id
-            record_info.status = status
-            record_info.amount = amount
-            record_info.company = company
-            record_info.page_num = page_num
-            record_info.inv_type = inv_type
-            record_info.etc_type = user_type
-            record_info.inv_count = inv_count
-            record_info.record_id = record_id
-            record_info.taxpaper_id = taxpaper_id
+            data = dict(
+                date=record_node.xpath("./tr[1]/td/table/tr[1]/th[1]/text()")[0][7:],
+                taxpaper_id=record_node.xpath(".//tr[2]/td[1]/table/tr[1]/td[2]/text()")[0],
+                inv_count=record_node.xpath(".//tr[2]/td[1]/table/tr[1]/td[3]/span/text()")[0],
+                inv_type=record_node.xpath("./tr[1]/td/table/tr[1]/th[3]/text()")[0],
+                company=record_node.xpath(".//tr[2]/td[1]/table/tr[1]/td[1]/text()")[0],
+                record_id=record_node.xpath("./tr[1]/td/table/tr/th[4]/a[1]")[0].get("href").split("/")[-4],
+                amount=record_node.xpath("./tr[1]/td/table/tr[1]/th[2]/span/text()")[0][2:],
+                status=record_node.xpath(".//tr[2]/td[1]/table/tr[1]/td[4]/span/text()")[0],
+                month=month,
+                etc_id=etc_id,
+                page_num=page_num,
+                etc_type=user_type
+            )
+            data["company"] = re.sub("\n|\s", "", data["company"])[5:]
+            data["taxpaper_id"] = re.sub("\n|\s", "", data["taxpaper_id"])[16:]
+            record_info = RecordInfo(**data)
             
             # record_info = dict(
             #     taxpaper_id=taxpaper_id,
@@ -337,7 +321,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
                 taxpaper_id_nm="TAXPAPER ID",
                 inv_count_nm="COUNT",
                 status_nm="STATUS",
-                **record_info.__dict__))
+                **data))
             yield record_info
             
 
