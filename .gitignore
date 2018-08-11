@@ -205,3 +205,4 @@ download/
 /tests/test_data.py
 /tests/download/
 doc/pic/.*
+scripts/
