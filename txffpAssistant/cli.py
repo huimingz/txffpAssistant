@@ -139,7 +139,7 @@ class Service(object):
     
         self.logger.info("模拟登陆中...")
         authed_session = handler.authenticated_session(
-            self.username, self.password, logger=self.logger)
+            self.username, self.password, logger=self.logger, session_auto_close=False)
         return authed_session
             
     def run(self):
@@ -275,8 +275,13 @@ class InvDlService(Service):
         return filename
     
     def record_dl(self, etc_id, etc_type, **kwargs):
+        if self.options.dl_all:
+            sac = False
+        else:
+            sac = True
+            
         rd_handler = handler.InvoiceRecordHandler(
-            session=self.authed_session, logger=self.logger)
+            session=self.authed_session, logger=self.logger, session_auto_close=sac)
         
         if "etc_info" not in kwargs:
             field_names = ["ID", "ETC类型", "年月", "发票数量", "金额",
