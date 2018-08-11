@@ -7,6 +7,7 @@
 
 import argparse
 import getpass
+import io
 import logging
 import os
 import string
@@ -269,8 +270,12 @@ class InvDlService(Service):
 
         with open(filepath, "wb") as f:
             f.write(response.content)
+            
+        tf = io.BytesIO(response.content)
+        tf.name = filename
+        
         if self.options.merge:
-            pdf.auto_merger(filepath, self.merge_dir)
+            pdf.auto_merger(tf, self.merge_dir)
             self.logger.info("pdf发票文件合并成功")
         return filename
     
