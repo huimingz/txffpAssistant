@@ -5,6 +5,7 @@
 # @Contact : kairu_madigan@yahoo.co.jp
 # @Date    : 2018/07/23 13:54
 
+import itertools
 import logging
 import os
 import sys
@@ -19,6 +20,14 @@ from tests import test_data
 
 logger = log.stream_logger(level=logging.DEBUG)
 base_dir = os.path.dirname(os.path.abspath(__file__))
+
+
+def iter_counter(obj: "iterable") -> int:
+    counter = 0
+    for _ in obj:
+        counter += 1
+    return counter
+
 
 class ETCCardHandlerTestCase(unittest.TestCase):
     
@@ -53,14 +62,9 @@ class ETCCardHandlerTestCase(unittest.TestCase):
         etc_event = generic.ETCCardHandler(session=authed_session, logger=logger)
         cardinfos_iter = etc_event.get_cardlist(user_type="COMPANY")
         
-        total = 0
         self.assertEqual(cardinfos_iter.__class__.__name__, "generator")
-        for page_num, cardinfos in enumerate(cardinfos_iter):
-            self.assertEqual(cardinfos.__class__.__name__, "generator")
-            for _ in cardinfos:
-                total += 1
-        self.assertEqual(total, 34)
-    
+        self.assertEqual(iter_counter(cardinfos_iter), 34)
+        
     def test_get_cardlist_case2(self):
         username = test_data.username
         password = test_data.password
@@ -69,13 +73,8 @@ class ETCCardHandlerTestCase(unittest.TestCase):
         etc_event = generic.ETCCardHandler(session=authed_session, logger=logger)
         cardinfos_iter = etc_event.get_cardlist(user_type="PERSONAL")
         
-        total = 0
         self.assertEqual(cardinfos_iter.__class__.__name__, "generator")
-        for page_num, cardinfos in enumerate(cardinfos_iter):
-            self.assertEqual(cardinfos.__class__.__name__, "generator")
-            for _ in cardinfos:
-                total += 1
-        self.assertEqual(total, 2)
+        self.assertEqual(iter_counter(cardinfos_iter), 2)
 
 
 class InvoiceRecordTestCase(unittest.TestCase):
@@ -89,8 +88,7 @@ class InvoiceRecordTestCase(unittest.TestCase):
         record_infos = ir._get_query_apply_data(html, 1, 201805, "xxxx", "COMPANY")
         
         self.assertEqual(record_infos.__class__.__name__, "generator")
-        record_info_list = [record_info for record_info in record_infos]
-        self.assertEqual(len(record_info_list), 3)
+        self.assertEqual(iter_counter(record_infos), 3)
     
     def test_get_record_info_case1(self):
         username = test_data.username
@@ -102,8 +100,7 @@ class InvoiceRecordTestCase(unittest.TestCase):
         record_infos = ir.get_record_info(month=201805, **test_data.redorc_data)
         
         self.assertEqual(record_infos.__class__.__name__, "generator")
-        record_info_list = [info for rc_info in record_infos for info in rc_info]
-        self.assertEqual(len(record_info_list), 3)
+        self.assertEqual(iter_counter(record_infos), 3)
 
 
 class FunctionTestCase(unittest.TestCase):

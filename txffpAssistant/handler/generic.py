@@ -112,7 +112,7 @@ class ETCCardHandler(base.GeneralHandler):
             
             cardinfos = self._get_cardlist_cardinfo(
                 response.text, user_type, page_num)
-            yield cardinfos
+            yield from cardinfos
             
             if self.has_next_page(response.text):
                 page_num += 1
@@ -268,7 +268,7 @@ class InvoiceRecordHandler(base.GeneralHandler):
             
             record_info_iter = self._get_query_apply_data(
                 response.text, page_num, month, card_id, user_type)
-            yield record_info_iter
+            yield from record_info_iter
             
             if self.has_next_page(html=response.text):
                 page_num += 1

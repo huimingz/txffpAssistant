@@ -151,9 +151,7 @@ class EtcService(Service):
     
     @staticmethod
     def get_etc_info(handler, etc_type):
-        etc = handler.get_cardlist(etc_type)
-        etcinfo = [ei for ei_iter in etc for ei in ei_iter]
-        return etcinfo
+        return handler.get_cardlist(etc_type)
     
     @staticmethod
     def pt_add_rows(pt: prettytable.PrettyTable,
@@ -213,9 +211,9 @@ class RecordService(Service):
         user_type = self.options.user_type.upper()
         card_id = self.options.etc_id
         month = self.options.month
-        
-        inv_rd = rd_handler.get_record_info(card_id, month, user_type)
-        record_info = [ri for ri_iter in inv_rd for ri in ri_iter]
+
+        record_info = rd_handler.get_record_info(card_id, month, user_type)
+        # record_info = [ri for ri_iter in inv_rd for ri in ri_iter]
         self.logger.info("已完成发票记录信息的获取")
         
         field_names = ["ID", "年月", "申请时间", "抬头", "纳税人识别号/统一社会信用代码", "类型",
@@ -299,28 +297,27 @@ class InvDlService(Service):
             pt = kwargs["pt"]
         
         inv_rd = rd_handler.get_record_info(etc_id, self.options.month, etc_type)
-        for page in inv_rd:
-            for info in page:
-                filename = self.download(info.record_id,
-                                         info.etc_id,
-                                         record_info=info,
-                                         etc_type=etc_type,
-                                         **kwargs)
-                if filename:
-                    self.dl_success += 1
-                    self.logger.info("[{}] 下载成功".format(filename))
-                    
-                    if "etc_info" not in kwargs:
-                        row = [len(pt._rows) + 1, info.etc_type, info.month, info.inv_count,
-                               info.amount, info.page_num, info.etc_id, info.record_id, filename]
-                    else:
-                        row = [len(pt._rows) + 1, info.etc_type, etc_info.region, etc_info.carnum,
-                               info.month, info.inv_count, info.amount, info.page_num, info.etc_id,
-                               info.record_id, filename]
-                    pt.add_row(row)
+        for info in inv_rd:
+            filename = self.download(info.record_id,
+                                     info.etc_id,
+                                     record_info=info,
+                                     etc_type=etc_type,
+                                     **kwargs)
+            if filename:
+                self.dl_success += 1
+                self.logger.info("[{}] 下载成功".format(filename))
+                
+                if "etc_info" not in kwargs:
+                    row = [len(pt._rows) + 1, info.etc_type, info.month, info.inv_count,
+                           info.amount, info.page_num, info.etc_id, info.record_id, filename]
                 else:
-                    self.dl_failed += 1
-                    self.dl_failed_list.append(info)
+                    row = [len(pt._rows) + 1, info.etc_type, etc_info.region, etc_info.carnum,
+                           info.month, info.inv_count, info.amount, info.page_num, info.etc_id,
+                           info.record_id, filename]
+                pt.add_row(row)
+            else:
+                self.dl_failed += 1
+                self.dl_failed_list.append(info)
 
         if "etc_info" not in kwargs:
             self.logger.info("\n" + pt.get_string())
@@ -336,9 +333,8 @@ class InvDlService(Service):
         pt.align["金额"] = "r"
         pt.align["发票数量"] = "l"
         
-        for page in etc_info:
-            for info in page:
-                self.record_dl(info.etc_id, etc_type, etc_info=info, pt=pt)
+        for info in etc_info:
+            self.record_dl(info.etc_id, etc_type, etc_info=info, pt=pt)
         self.logger.info("\n" + pt.get_string())
                 
     def run(self):
