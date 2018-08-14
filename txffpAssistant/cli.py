@@ -383,7 +383,7 @@ def main():
     
     # invoice record
     service_record = service_subparser.add_parser("record" ,help="查看开票记录")
-    service_record.add_argument("--id", action=IDAction ,dest="etc_id", type=str, required=True,
+    service_record.add_argument("--etcid", action=IDAction ,dest="etc_id", type=str, required=True,
                                 help="ETC卡ID")
     service_record.add_argument("--month", action=MonthAction, dest="month", type=str,
                                 required=True, help="开票年月，例如: 201805")
