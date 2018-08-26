@@ -10,8 +10,8 @@ import re
 
 from lxml import etree
 
-from txffpAssistant import exceptions
-from txffpAssistant.handler import base
+from .. import exceptions
+from ..handler import base
 
 
 __all__ = ["CardInfo", "ETCCardHandler", "InvoiceRecordHandler", "invpdf_cld_dl"]

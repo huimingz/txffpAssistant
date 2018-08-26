@@ -11,8 +11,8 @@ from urllib.parse import urlparse
 from lxml import etree
 
 from .base import BaseHandler
-from txffpAssistant import exceptions
-from txffpAssistant import decorators
+from .. import exceptions
+from .. import decorators
 
 
 __all__ = ["AuthHandler", "authenticated_session"]

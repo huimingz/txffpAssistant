@@ -12,8 +12,8 @@ import requests
 from lxml import etree
 from requests.cookies import RequestsCookieJar
 
-from txffpAssistant import component
-from txffpAssistant import exceptions
+from .. import component
+from .. import exceptions
 
 
 __all__ = ["BaseHandler", "GeneralHandler"]
