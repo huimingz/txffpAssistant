@@ -119,7 +119,15 @@ class OutputDirAction(argparse.Action):
             sys,exit(1)
             
         setattr(namespace, self.dest, values)
-            
+        
+
+class SleepTimeAction(argparse.Action):
+    
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values < 0:
+            values = 0
+        setattr(namespace, self.dest, values)
+
 
 class Service(object):
     
@@ -140,7 +148,12 @@ class Service(object):
     
         self.logger.info("模拟登陆中...")
         authed_session = handler.authenticated_session(
-            self.username, self.password, logger=self.logger, session_auto_close=False)
+            self.username,
+            self.password,
+            logger=self.logger,
+            session_auto_close=False,
+            sleep_time=self.options.sleep_time
+        )
         return authed_session
             
     def run(self):
@@ -171,7 +184,10 @@ class EtcService(Service):
         authed_session = self.login()
         
         etc_handler = handler.ETCCardHandler(
-            session=authed_session, logger=self.logger)
+            session=authed_session,
+            logger=self.logger,
+            sleep_time=self.options.sleep_time
+        )
         
         etc_type = self.options.etc_type.upper()
         if etc_type == "ALL":
@@ -206,7 +222,10 @@ class RecordService(Service):
         authed_session = self.login()
         
         rd_handler = handler.InvoiceRecordHandler(
-            session=authed_session, logger=self.logger)
+            session=authed_session,
+            logger=self.logger,
+            sleep_time=self.options.sleep_time
+        )
 
         user_type = self.options.user_type.upper()
         card_id = self.options.etc_id
@@ -284,7 +303,11 @@ class InvDlService(Service):
             sac = False
             
         rd_handler = handler.InvoiceRecordHandler(
-            session=self.authed_session, logger=self.logger, session_auto_close=sac)
+            session=self.authed_session,
+            logger=self.logger,
+            session_auto_close=sac,
+            sleep_time=self.options.sleep_time
+        )
         
         if "etc_info" not in kwargs:
             field_names = ["ID", "ETC类型", "年月", "发票数量", "金额",
@@ -371,6 +394,8 @@ def main():
     parser.add_argument("-s", "--simple", action="store_true", dest="simple", help="精简模式")
     parser.add_argument("-v", "--version", action="version", version=version_info,
                         help="查看当前版本并退出")
+    parser.add_argument("--sleep", action=SleepTimeAction, dest="sleep_time", default=0,
+                        type=float, help="请求间隔睡眠时间(s),默认关闭")
 
     service_subparser = parser.add_subparsers(title="Commands", dest="command")
     

@@ -108,6 +108,7 @@ class BaseHandler(object):
                 "method '{}' is not supported.".format(method))
 
         if self.sleep_time:
+            self.logger.debug("服务器减压睡眠: {:.2f}s".format(self.sleep_time))
             time.sleep(self.sleep_time)
 
         self.logger.debug("{}请求: {}".format(method, url))
