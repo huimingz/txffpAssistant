@@ -7,3 +7,4 @@ PyPDF2==1.26.0
 requests==2.19.1
 urllib3==1.23
 prettytable==0.7.2
+python-dateutil==2.7.3
