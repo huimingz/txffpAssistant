@@ -64,10 +64,11 @@ $ txffp inv-dl --merge --month 201805 --auth user:password --all -o ./
 $ txffp -h
 
 optional arguments:
-  -h, --help           show this help message and exit
-  -d, --debug          debug模式
-  -s, --simple         精简模式
-  -v, --version        查看当前版本并退出
+  -h, --help            show this help message and exit
+  -d, --debug           debug模式
+  -s, --simple          精简模式
+  -v, --version         查看当前版本并退出
+  --sleep SLEEP_TIME    请求间隔睡眠时间(s),默认关闭
 ```
 
 ``etc``命令参数：
