@@ -115,7 +115,7 @@ class BaseHandler(object):
         self.logger.debug("{}请求: {}".format(method, url))
         response = method_map[method]()
         self.logger.debug(
-            "获得响应, 状态码: {}, url: {}".format(response.status_code, url))
+            "获得响应, 状态码: {}, url: {}".format(response.status_code, response.url))
 
         if raw:
             return response
