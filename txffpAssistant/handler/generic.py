@@ -5,8 +5,10 @@
 # @Contact : kairu_madigan@yahoo.co.jp
 # @Date    : 2018-07-23 12:36
 
+import datetime
 import os
 import re
+from dateutil.relativedelta import relativedelta
 
 from lxml import etree
 
@@ -14,7 +16,9 @@ from .. import exceptions
 from ..handler import base
 
 
-__all__ = ["CardInfo", "ETCCardHandler", "InvoiceRecordHandler", "invpdf_cld_dl"]
+__all__ = ["CardInfo", "ETCCardHandler", "InvoiceRecordHandler", "invpdf_cld_dl",
+           "InvoiceApplyHandler"]
+FAILED_RETRY = 3
 
 
 class CardInfo(object):
@@ -324,7 +328,154 @@ class InvoiceRecordHandler(base.GeneralHandler):
                 **data))
             yield record_info
             
+            
+class InvoiceApplyHandler(base.GeneralHandler):
+    
+    def auto_month_range(self):
+        now = datetime.datetime.now()
+        past = now - relativedelta(months=2)
+        now_str = now.strftime("%Y%m")
+        past_str = past.strftime("%Y%m")
+        return now_str, past_str
+    
+    def api_apply_submit(self, etc_id, apply_id, user_type):
+        url = "https://pss.txffp.com/pss/app/login/invoice/consumeTrans/submitApply"
+        method = "POST"
+        data = {
+            "applyId": apply_id,
+            "id": etc_id,
+            "userType": user_type,
+        }
+        return self.request(url, method, data)
+    
+    def api_consume_trans_apply(self, etc_id, trade_id_list, month,
+                                start_month, end_month, email="", title_id="",
+                                user_type="", query_type="", page_no=1):
+        url = "https://pss.txffp.com/pss/app/login/invoice/consumeTrans/apply"
+        method = "POST"
+        data = {
+            "id": etc_id,
+            "tradeIdList": trade_id_list,
+            "titleId": title_id,
+            "invoiceMail": email,
+            "userType": user_type,
+            "month": month,
+            "startMoth": start_month,
+            "endMoth": end_month,
+            "queryType": query_type,
+            "pageNo": page_no,
+        }
+        return self.request(url, method, data)
+    
+    def api_consume_trans(self, etc_id, month, start_month=None, end_month=None,
+                          page_no=1, user_type="", trade_id_list="",
+                          email="", query_type="", title_id=""):
+        url = "https://pss.txffp.com/pss/app/login/invoice/consumeTrans/manage"
+        method = "POST"
+        data = {
+            "id": etc_id,
+            "tradeIdList": trade_id_list,
+            "titleId": title_id,
+            "invoiceMail": email,
+            "userType": user_type,
+            "month": month,
+            "startMoth": start_month,
+            "endMoth": end_month,
+            "queryType": query_type,
+            "pageNo": page_no,
+        }
+        return self.request(url, method, data)
+    
+    def apply_id_submit(self, etc_id, apply_id, user_type):
+        response = self.api_apply_submit(etc_id, apply_id, user_type)
+        if response.status_code != 200:
+            err_msg = "开票失败，提交applyid响应码非200，原因：{}"
+            self.logger.error(err_msg.format(response.reason))
+        self.logger.info("开票成功，etc_id: {} [{}]".format(etc_id, user_type))
+        
+    def apply_etc(self, etc_id, month, email="", start_month=None, end_month=None):
+        self.logger.info("etcId: {}[{}]开票中...".format(etc_id, month))
+        trade_ids = self.get_trade_ids(
+            etc_id=etc_id,
+            month=month,
+            email=email,
+            start_month=start_month,
+            end_month=end_month
+        )
+        trade_id_list = list()
+        for trade_id in trade_ids:
+            trade_id_list.append(trade_id)
+        trade_id_list = ",".join(trade_id_list)
 
+        response = self.api_consume_trans_apply(
+            etc_id=etc_id,
+            trade_id_list=trade_id_list,
+            month=month,
+            start_month=start_month,
+            end_month=end_month,
+            email=email
+        )
+        if response.status_code != 200:
+            msg = "获取applyid信息失败，错误信息：{}"
+            self.logger.error(msg.format(response.reason))
+        
+        try:
+            apply_id, user_type = self.apply_id_html_parser(response.content)
+        except IndexError as err:
+            msg = "无法获取applyid信息，可能时没有需要执行开票的内容项目，err: {}"
+            self.logger.warn(msg.format(err))
+        # self.apply_id_submit(etc_id, apply_id, user_type)
+    
+    def get_trade_ids(self, *args, **kwargs):
+        if not kwargs["start_month"] or not kwargs["end_month"]:
+            kwargs["start_month"], kwargs["end_month"] = self.auto_month_range()
+            
+        page_num = 1
+        while True:
+            failed = 0
+            for _ in range(FAILED_RETRY):
+                response = self.api_consume_trans(page_no=page_num, *args, **kwargs)
+                if response.status_code != 200:
+                    failed += 1
+                    msg = "请求{}失败，3秒后重新请求。（失败次数: {}）"
+                    self.logger.error(msg.format(response.url, failed))
+                    if failed == FAILED_RETRY:
+                        break
+                else:
+                    break
+                    
+            content = response.content
+            trade_ids = self.tradeids_html_parser(content)
+            yield from trade_ids
+            
+            if self.has_next_page(content):
+                page_num += 1
+            else:
+                break
+        
+    def tradeids_html_parser(self, html):
+        self.logger.debug("解析响应报文，提取trade id")
+        root = etree.HTML(html)
+        nodes = root.xpath('//tr/td[@class="tab_tr_td10"]/input[@class="check_one"]')
+        
+        for node in nodes:
+            id_ = node.get("id")
+            tradeid = re.match(r"[^_]*", id_).group()
+            if not tradeid:
+                continue
+            self.logger.debug("成功提取tradeId: {}".format(tradeid))
+            yield tradeid
+    
+    def apply_id_html_parser(self, html):
+        self.logger.debug("解析响应报文，提取applyId和userType信息")
+        root = etree.HTML(html)
+        node = root.xpath("//form[@id='checkForm']")[0]
+        apply_id = node.xpath("./input[@id='applyId']")[0].get("value")
+        user_type = node.xpath("./input[@id='userType']")[0].get("value")
+        self.logger.debug("成功提取数据，applyId: {}".format(apply_id))
+        return apply_id, user_type
+            
+            
 def invpdf_cld_dl(session, card_id, inv_id):
     url = (
         "https://pss.txffp.com/pss/app/login/invoice/"

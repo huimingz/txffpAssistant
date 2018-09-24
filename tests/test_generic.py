@@ -103,6 +103,24 @@ class InvoiceRecordTestCase(unittest.TestCase):
         self.assertEqual(iter_counter(record_infos), 3)
 
 
+class InvoiceApplyTestCase(unittest.TestCase):
+    
+    def authed_session(self):
+        username = test_data.username
+        password = test_data.password
+        session = auth.authenticated_session(username, password, logger=logger)
+        return session
+    
+    def ia(self):
+        return generic.InvoiceApplyHandler(logger=logger, session=self.authed_session())
+    
+    
+    def test_apply_etc_case1(self):
+        data = test_data.InvoiceApplyData
+        ia = self.ia()
+        ia.apply_etc(etc_id=data.etc_id, month=data.month)
+
+
 class FunctionTestCase(unittest.TestCase):
     
     def test_invpdf_cld_dl(self):

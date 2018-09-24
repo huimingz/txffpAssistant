@@ -10,6 +10,7 @@ import getpass
 import io
 import logging
 import os
+import re
 import string
 import sys
 
@@ -67,7 +68,22 @@ class MonthAction(argparse.Action):
         if month not in month_all:
             print("Error: 月份信息不合法，所指定月份不存在")
             sys.exit(1)
+            
 
+class EmailAction(argparse.Action):
+    
+    def __call__(self, parser, namespace, value, option_string=None):
+        value = value if value else self.email_regex(value)
+        print("value:", value)
+        sys.exit(1)
+        setattr(namespace, self.dest, value)
+    
+    def email_regex(self, value):
+        email_compile = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+        if not email_compile.match(value):
+            raise ValueError("邮件地址格式错误")
+        return value
+    
 
 class AuthAction(argparse.Action):
     
@@ -347,7 +363,10 @@ class InvDlService(Service):
     
     def etc_dl(self, etc_type):
         etc_handler = handler.ETCCardHandler(
-            session=self.authed_session, logger=self.logger)
+            session=self.authed_session,
+            logger=self.logger,
+            sleep_time=self.options.sleep_time
+        )
         
         etc_info = etc_handler.get_cardlist(etc_type)
         field_names = ["ID", "ETC类型", "区域", "车牌号", "年月", "发票数量",
@@ -385,7 +404,52 @@ class InvDlService(Service):
             else:
                 self.etc_dl("COMPANY")
             return
-   
+        
+
+class ApplyService(Service):
+    
+    def __init__(self, *args, **kwargs):
+        super(ApplyService, self).__init__(*args, **kwargs)
+        self.authed_session = self.login()
+        self.apply_handler = handler.InvoiceApplyHandler(
+            session=self.authed_session,
+            session_auto_close=False,
+            sleep_time=self.options.sleep_time,
+            logger=self.logger
+        )
+    
+    def etc_info_all(self):
+        etc = handler.ETCCardHandler(
+            logger=self.logger,
+            session=self.authed_session,
+            session_auto_close=False,
+            sleep_time=self.options.sleep_time
+        )
+        for user_type in ["PERSONAL", "COMPANY"]:
+            yield from etc.get_cardlist(user_type)
+    
+    def apply(self, etc_id):
+        self.apply_handler.apply_etc(
+            etc_id=etc_id,
+            month=self.options.month,
+            email=self.options.email,
+            start_month="",
+            end_month=""
+        )
+    
+    def apply_all(self):
+        for etc_info in self.etc_info_all():
+            self.apply(etc_info.etc_id)
+    
+    def run(self):
+        if self.options.apply_etc_id:
+            self.logger.info("单ETC开票[{}]".format(self.options.month))
+            self.apply(self.options.apply_etc_id)
+        else:
+            self.logger.info("全部ETC卡开票[{}]".format(self.options.month))
+            self.apply_all()
+        self.authed_session.close()
+
 
 def main():
     description = "使用过程中出现问题，请到https://github.com/Kairu-Madigan/txffpAssistant发起issue。"
@@ -433,6 +497,20 @@ def main():
     service_inv_dl.add_argument("-o", "--output", type=str, action=OutputDirAction,
                                 default=os.path.join(os.getcwd(), "txffp"),
                                 help="保存位置, 默认：当前目录的txffp目录下")
+    
+    # invoice apply
+    service_apply = service_subparser.add_parser("apply", help="自动开票<Beta>")
+    service_apply.add_argument("--auth", action=AuthAction, dest="auth", type=str,
+                               help="用户名和密码，格式：user:password")
+    service_apply.add_argument("--month", action=MonthAction, dest="month", type=str,
+                               required=True, help="开票年月，例: 201805")
+    service_apply.add_argument("--email", action=EmailAction, dest="email", type=str,
+                               default="", help="发票接收邮箱")
+    apply_group = service_apply.add_mutually_exclusive_group()
+    apply_group.add_argument("--all", dest="apply_all", type=bool, default=True,
+                             help="全部ETC卡开票（默认）")
+    apply_group.add_argument("--etcid", action=IDAction, dest="apply_etc_id",
+                             type=str, help="指定ETC卡（需要etcid）")
 
     if len(sys.argv) == 1:
         parser.print_help(file=sys.stdout)

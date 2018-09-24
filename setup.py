@@ -41,7 +41,8 @@ setup(
         "requests>=2.19.1",
         "PyPDF2>=1.26.0",
         "filetype>=1.0.1",
-        "prettytable>=0.7.2"
+        "prettytable>=0.7.2",
+        "python-dateutil==2.7.3"
     ],
     classifiers=[
         "Intended Audience :: Other Audience",
