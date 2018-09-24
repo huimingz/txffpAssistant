@@ -6,6 +6,7 @@
 # @Date    : 2018/07/22 15:48
 
 import logging
+import random
 import time
 
 import requests
@@ -109,8 +110,9 @@ class BaseHandler(object):
                 "method '{}' is not supported.".format(method))
 
         if self.sleep_time:
-            self.logger.debug("服务器减压睡眠: {:.2f}s".format(self.sleep_time))
-            time.sleep(self.sleep_time)
+            temp_time = round(random.uniform(0, self.sleep_time), 3)
+            self.logger.debug("服务器减压睡眠: {}s".format(temp_time))
+            time.sleep(temp_time)
 
         self.logger.debug("{}请求: {}".format(method, url))
         response = method_map[method]()
