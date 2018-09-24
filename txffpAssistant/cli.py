@@ -459,7 +459,7 @@ def main():
     parser.add_argument("-v", "--version", action="version", version=version_info,
                         help="查看当前版本并退出")
     parser.add_argument("--sleep", action=SleepTimeAction, dest="sleep_time", default=0,
-                        type=float, help="请求间隔睡眠时间(s),默认关闭")
+                        type=float, help="请求间隔睡眠时间(s),默认关闭。(推荐使用)")
 
     service_subparser = parser.add_subparsers(title="Commands", dest="command")
     
