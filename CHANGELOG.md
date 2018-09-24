@@ -1,3 +1,11 @@
+## <small>1.1.0 (2018-9-24)</small>
+
+* perf: 优化睡眠，使用范围随机值取代固定值 cc80b6a
+* refactor: 更改HTTP请求头信息 74abb89
+* feat: 新增开票功能 c69cf9e
+
+
+
 ## <small>1.0.4 (2018-09-21)</small>
 
 * feat: 新增请求睡眠间隔时间设置参数 dd6fdd6
