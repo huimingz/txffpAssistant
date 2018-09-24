@@ -499,7 +499,7 @@ def main():
                                 help="保存位置, 默认：当前目录的txffp目录下")
     
     # invoice apply
-    service_apply = service_subparser.add_parser("apply", help="自动开票")
+    service_apply = service_subparser.add_parser("apply", help="自动开票<Beta>")
     service_apply.add_argument("--auth", action=AuthAction, dest="auth", type=str,
                                help="用户名和密码，格式：user:password")
     service_apply.add_argument("--month", action=MonthAction, dest="month", type=str,
