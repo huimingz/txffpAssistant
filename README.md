@@ -114,6 +114,18 @@ optional arguments:
                         保存位置, 默认：当前目录的txffp目录下
 ```
 
+``apply``参数命令：
+
+```
+optional arguments:
+  -h, --help            show this help message and exit
+  --auth AUTH           用户名和密码，格式：user:password
+  --month MONTH         开票年月，例: 201805
+  --email EMAIL         发票接收邮箱
+  --all APPLY_ALL       全部ETC卡开票（默认）
+  --etcid APPLY_ETC_ID  指定ETC卡（需要etcid）
+```
+
 ![help info](docs/media/img/txffp-usage.gif "help message")
 
 
