@@ -19,10 +19,11 @@ from .. import exceptions
 __all__ = ["BaseHandler", "GeneralHandler"]
 
 DEFAULT_HEADER = {
-    "User-Agent": """Mozilla/5.0 (Windows; U; Windows NT 5.2) Gecko/2008070208 Firefox/3.0.1""",
+    "User-Agent": """Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36""",
     "Accept-Language": "ja,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,en-US;q=0.6",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
     "Cache-Control": "no-cache",
+    "Connection": "keep-alive",
 }
 
 
