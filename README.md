@@ -156,15 +156,3 @@ download/
 
 ## 版权
 该项目根据GNU许可证授权，详细信息请查看[LICENSE](LICENSE)文件。
-
-
-## 赞助
-如果您觉得 txffpAssistant 对你有帮助，欢迎给予我一定的捐助来维持项目的长期发展。
-
-**支付宝扫码捐赠**
-
-![](docs/media/img/donate-alipay.png)
-
-**微信扫码捐赠**
-
-![](docs/media/img/donate-wechat.png)
